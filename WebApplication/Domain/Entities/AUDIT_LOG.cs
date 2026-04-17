@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Audit_Log //corregir mayusculas    
+    public class Audit_Log
     {
         public Guid Id { get; set; }
         public int UserId { get; set; }
