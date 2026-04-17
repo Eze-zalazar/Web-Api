@@ -1,4 +1,7 @@
 
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,6 +12,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+// Custom
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
