@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class EVENT
+    public class Event
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public DateTime EventDate { get; set; }
         public string Venue { get; set; }
         public string Status { get; set; }
+
+        public IList<Sector> Sectors { get; set; }
     }
 }

@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class SECTOR
+    public class Sector
     {
         public int Id { get; set; }
-        public int Eventld { get; set; }
+        public int EventId { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Capacity { get; set; }
+
+        public Event Event { get; set; }  //revisar si es necesario
+        public IList<Seat> Seats { get; set; } = new List<Seat>();
     }
 }
