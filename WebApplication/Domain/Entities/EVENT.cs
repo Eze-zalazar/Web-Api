@@ -13,5 +13,7 @@ namespace Domain.Entities
         public DateTime EventDate { get; set; }
         public string Venue { get; set; }
         public string Status { get; set; }
+
+        public IList<Sector> Sectors { get; set; }
     }
 }

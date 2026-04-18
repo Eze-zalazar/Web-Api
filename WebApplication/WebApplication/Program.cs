@@ -1,5 +1,7 @@
 
+using Application.Interfaces;
 using Infrastructure.Persistence;
+using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
@@ -13,6 +15,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 // Custom
+// Inyeccion por dependencias de los repositorios
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+
+
+// Configurar la cadena de conexión para SQL Server
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));

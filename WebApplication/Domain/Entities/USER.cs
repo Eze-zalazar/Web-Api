@@ -12,6 +12,9 @@ namespace Domain.Entities
         public string Name { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
-     
+
+        public IList<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public IList<Audit_Log> AuditLogs { get; set; } = new List<Audit_Log>();
+
     }
 }

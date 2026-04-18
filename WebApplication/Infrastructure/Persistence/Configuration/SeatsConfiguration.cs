@@ -13,20 +13,25 @@ namespace Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Seat> builder)
         {
-            builder.ToTable("Seats");
             builder.HasKey(s => s.Id);
 
-            builder.Property(s => s.RowIdentifier).IsRequired().HasMaxLength(10);
-            builder.Property(s => s.Status).IsRequired().HasMaxLength(20);
+            builder.Property(s => s.RowIdentifier)
+                .IsRequired()
+                .HasMaxLength(10);
 
-            // Control de Concurrencia (Optimistic Concurrency)
-            builder.Property(s => s.Version).IsRowVersion();
+            builder.Property(s => s.Status)
+                .IsRequired()
+                .HasMaxLength(20);
 
-            //// Relación 1:1 o 1:N con Reservation 
-            //// (Según tu diagrama "se asigna a" parece 1 a opcional 1)
-            //builder.HasMany(s => s.Reservations)
-            //       .WithOne(r => r.Seat)
-            //       .HasForeignKey(r => r.SeatId);
+            // Optimistic Locking - requerimiento del TP
+            builder.Property(s => s.Version)
+                .IsRowVersion();
+
+            // Una butaca solo puede tener una reserva activa
+            builder.HasOne(s => s.Reservation)
+                .WithOne(r => r.Seat)
+                .HasForeignKey<Reservation>(r => r.SeatId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

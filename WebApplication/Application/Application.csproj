@@ -7,8 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="UseCase\Eventos\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="UseCase\Eventos\Commands\" />
+    <Folder Include="UseCase\Eventos\Handlers\" />
+    <Folder Include="UseCase\Payments\Commands\" />
+    <Folder Include="UseCase\Payments\Handlers\" />
+    <Folder Include="UseCase\Reservations\Commands\" />
+    <Folder Include="UseCase\Reservations\Handlers\" />
+    <Folder Include="UseCase\Seats\Handlers\" />
+    <Folder Include="UseCase\Seats\Queries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,16 +13,20 @@ namespace Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Sector> builder)
         {
-            builder.ToTable("Sectors");
             builder.HasKey(s => s.Id);
 
-            builder.Property(s => s.Name).IsRequired().HasMaxLength(100);
-            builder.Property(s => s.Price).HasPrecision(18, 2);
+            builder.Property(s => s.Name)
+                .IsRequired()
+                .HasMaxLength(100);
 
-            // Relación 1:N con Seat
-            //builder.HasMany(s => s.Seats)
-            //       .WithOne(st => st.Sector)
-            //       .HasForeignKey(st => st.SectorId);
+            builder.Property(s => s.Price)
+                .IsRequired()
+                .HasPrecision(10, 2);
+
+            builder.HasMany(s => s.Seats)
+                .WithOne(s => s.Sector)
+                .HasForeignKey(s => s.SectorId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

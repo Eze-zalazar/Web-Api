@@ -9,21 +9,33 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistence.Configuration
 {
-    public class Audit_LogConfiguration : IEntityTypeConfiguration<Audit_Log>
+    public class AuditLogConfiguration : IEntityTypeConfiguration<Audit_Log>
     {
         public void Configure(EntityTypeBuilder<Audit_Log> builder)
         {
-            builder.ToTable("AuditLogs");
             builder.HasKey(a => a.Id);
 
-            builder.Property(a => a.Action).IsRequired().HasMaxLength(50);
-            builder.Property(a => a.EntityType).IsRequired().HasMaxLength(50);
-            builder.Property(a => a.EntityId).IsRequired().HasMaxLength(50);
+            builder.Property(a => a.Action)
+                .IsRequired()
+                .HasMaxLength(50);
 
-            // Para el JSON de metadatos
-            builder.Property(a => a.Details).HasColumnType("nvarchar(max)");
+            builder.Property(a => a.EntityType)
+                .IsRequired()
+                .HasMaxLength(50);
 
-            builder.Property(a => a.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            builder.Property(a => a.EntityId)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder.Property(a => a.Details)
+                .HasColumnType("nvarchar(max)");
+
+            // Relación opcional - puede ser proceso del sistema
+            builder.HasOne(a => a.User)
+                .WithMany(u => u.AuditLogs)
+                .HasForeignKey(a => a.UserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
