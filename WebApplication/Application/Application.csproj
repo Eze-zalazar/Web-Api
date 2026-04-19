@@ -7,19 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="UseCase\Eventos\Commands\" />
-    <Folder Include="UseCase\Eventos\Handlers\" />
-    <Folder Include="UseCase\Payments\Commands\" />
-    <Folder Include="UseCase\Payments\Handlers\" />
-    <Folder Include="UseCase\Reservations\Commands\" />
-    <Folder Include="UseCase\Reservations\Handlers\" />
-    <Folder Include="UseCase\Seats\Handlers\" />
-    <Folder Include="UseCase\Seats\Queries\" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <Folder Include="UseCase\Eventos\Commands\" />
   </ItemGroup>
 
 </Project>
