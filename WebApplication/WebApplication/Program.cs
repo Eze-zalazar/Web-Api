@@ -15,7 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // UnitOfWork
-builder.Services.AddScoped<IUnitOfWork, AppDbContext>();
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
 
 // Repositorios
 builder.Services.AddScoped<IEventRepository, EventRepository>();
@@ -40,9 +40,17 @@ var app = builder.Build();
 // Migraciones y Seed automático
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var services = scope.ServiceProvider;
+
+    // Obtenemos el contexto y la configuración del contenedor
+    var context = services.GetRequiredService<AppDbContext>();
+    var configuration = services.GetRequiredService<IConfiguration>();
+
+    // Ejecutamos las migraciones pendientes
     await context.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAsync(context);
+
+    // Pasamos ambos parámetros al Seeder
+    await DatabaseSeeder.SeedAsync(context, configuration);
 }
 
 if (app.Environment.IsDevelopment())

@@ -23,15 +23,14 @@ namespace Infrastructure.Persistence.Configuration
                 .IsRequired()
                 .HasMaxLength(20);
 
-            // Optimistic Locking - requerimiento del TP
+            //Usamos IsConcurrencyToken para manejar el int manualmente
             builder.Property(s => s.Version)
-                .IsRowVersion();
+                .IsConcurrencyToken();
 
-            // Una butaca solo puede tener una reserva activa
             builder.HasOne(s => s.Reservation)
-                .WithOne(r => r.Seat)
-                .HasForeignKey<Reservation>(r => r.SeatId)
-                .OnDelete(DeleteBehavior.Cascade);
+              .WithOne(r => r.Seat)
+              .HasForeignKey<Reservation>(r => r.SeatId) // La FK está en Reservation
+              .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

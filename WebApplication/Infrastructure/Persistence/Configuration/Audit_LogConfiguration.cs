@@ -14,6 +14,7 @@ namespace Infrastructure.Persistence.Configuration
         public void Configure(EntityTypeBuilder<Audit_Log> builder)
         {
             builder.HasKey(a => a.Id);
+            //builder.ToTable("AUDIT_LOG");
 
             builder.Property(a => a.Action)
                 .IsRequired()
@@ -32,10 +33,10 @@ namespace Infrastructure.Persistence.Configuration
 
             // Relación opcional - puede ser proceso del sistema
             builder.HasOne(a => a.User)
-                .WithMany(u => u.AuditLogs)
-                .HasForeignKey(a => a.UserId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Restrict);
+             .WithMany(u => u.AuditLogs)
+             .HasForeignKey(a => a.UserId)
+             .IsRequired(false) // Permite que UserId sea NULL en la DB
+             .OnDelete(DeleteBehavior.SetNull); // Si se borra el usuario, el log queda con UserId NULL
         }
     }
 }

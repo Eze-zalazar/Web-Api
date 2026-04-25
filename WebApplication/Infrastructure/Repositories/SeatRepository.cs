@@ -30,8 +30,7 @@ namespace Infrastructure.Repositories
 
         public async Task<Seat?> GetByIdAsync(Guid seatId)
         {
-            return await _context.Seats
-                .AsNoTracking()                         
+            return await _context.Seats                      
                 .FirstOrDefaultAsync(s => s.Id == seatId);
         }
         // UpdateAsync NO usa AsNoTracking

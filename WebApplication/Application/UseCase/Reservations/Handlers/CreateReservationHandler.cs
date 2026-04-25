@@ -31,50 +31,68 @@ namespace Application.UseCase.Reservations.Handlers
 
         public async Task<ReservationResponse> HandleAsync(CreateReservationCommand command)
         {
-            var seat = await _seatRepository.GetByIdAsync(command.SeatId);
-            if (seat == null)
-                throw new Exception("Butaca no encontrada");
+            // Iniciamos la transacción para asegurar ACID
+            await _unitOfWork.BeginTransactionAsync();
 
-            if (seat.Status != "Available")
-                throw new Exception("Butaca no disponible");
-
-            seat.Status = "Reserved";
-            await _seatRepository.UpdateAsync(seat);
-
-            var reservation = new Reservation
+            try
             {
-                Id = Guid.NewGuid(),
-                SeatId = command.SeatId,
-                UserId = command.UserId,
-                Status = "Pending",
-                ReservedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(5)
-            };
-            await _reservationRepository.AddAsync(reservation);
+                var seat = await _seatRepository.GetByIdAsync(command.SeatId);
+                if (seat == null) throw new Exception("Butaca no encontrada");
 
-            var auditLog = new Audit_Log
+                if (seat.Status != "Available")
+                    throw new Exception("Butaca no disponible");
+
+                // 1. Actualización del asiento
+                seat.Status = "Reserved";
+                seat.Version++; // IMPORTANTE: Incremento para concurrencia optimista
+                await _seatRepository.UpdateAsync(seat);
+
+                // 2. Creación de la reserva
+                var reservation = new Reservation
+                {
+                    Id = Guid.NewGuid(),
+                    SeatId = command.SeatId,
+                    UserId = command.UserId,
+                    Status = "Pending",
+                    ReservedAt = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(5)
+                };
+                await _reservationRepository.AddAsync(reservation);
+
+                // 3. Log de auditoría
+                var auditLog = new Audit_Log
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = command.UserId,
+                    Action = "RESERVE_SUCCESS",
+                    EntityType = "Reservation",
+                    EntityId = reservation.Id.ToString(),
+                    Details = $"Butaca {command.SeatId} reservada por usuario {command.UserId}",
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _auditLogRepository.AddAsync(auditLog);
+
+                // 4. Guardado atómico
+                await _unitOfWork.SaveChangesAsync();
+
+                // 5. Si todo OK, confirmamos transacción
+                await _unitOfWork.CommitTransactionAsync();
+
+                return new ReservationResponse {
+                    Id = reservation.Id,
+                    SeatId = reservation.SeatId,
+                    UserId = reservation.UserId,
+                    Status = reservation.Status,
+                    ReservedAt = reservation.ReservedAt,
+                    ExpiresAt = reservation.ExpiresAt
+                };
+            }
+            catch (Exception)
             {
-                Id = Guid.NewGuid(),
-                UserId = command.UserId,
-                Action = "RESERVE_SUCCESS",
-                EntityType = "Reservation",
-                EntityId = reservation.Id.ToString(),
-                Details = $"Butaca {command.SeatId} reservada por usuario {command.UserId}",
-                CreatedAt = DateTime.UtcNow
-            };
-            await _auditLogRepository.AddAsync(auditLog);
-
-            await _unitOfWork.SaveChangesAsync(); // ← usa la interfaz
-
-            return new ReservationResponse
-            {
-                Id = reservation.Id,
-                SeatId = reservation.SeatId,
-                UserId = reservation.UserId,
-                Status = reservation.Status,
-                ReservedAt = reservation.ReservedAt,
-                ExpiresAt = reservation.ExpiresAt
-            };
+                // Si algo falla, ejecutamos el Rollback completo
+                await _unitOfWork.RollbackTransactionAsync();
+                throw; // Re-lanzamos para que el controlador lo maneje
+            }
         }
     }
 }

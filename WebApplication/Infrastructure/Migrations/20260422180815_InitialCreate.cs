@@ -69,7 +69,7 @@ namespace Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
                     Action = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     EntityType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     EntityId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -84,7 +84,7 @@ namespace Infrastructure.Migrations
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -96,7 +96,7 @@ namespace Infrastructure.Migrations
                     RowIdentifier = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     SeatNumber = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Version = table.Column<long>(type: "bigint", rowVersion: true, nullable: false)
+                    Version = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

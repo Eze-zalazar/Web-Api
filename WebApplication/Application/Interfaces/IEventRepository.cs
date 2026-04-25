@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IEventRepository
     {
-        Task<IEnumerable<Event>> GetAllAsync(int page, int pageSize);
+        Task<IEnumerable<Event>> GetAllAsync(int page, int pageSize, string? status = null);
         Task<Event?> GetByIdAsync(int id);
     }
 }
