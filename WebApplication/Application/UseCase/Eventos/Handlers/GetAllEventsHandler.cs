@@ -20,7 +20,8 @@ namespace Application.UseCase.Eventos.Handlers
 
         public async Task<IEnumerable<EventResponse>> HandleAsync(GetAllEventsQuery query)
         {
-            var events = await _eventRepository.GetAllAsync(query.Page, query.PageSize);
+            // ← agregar "Active" como tercer parámetro
+            var events = await _eventRepository.GetAllAsync(query.Page, query.PageSize, "Active");
 
             return events.Select(e => new EventResponse
             {

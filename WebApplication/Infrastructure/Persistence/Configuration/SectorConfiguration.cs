@@ -24,9 +24,13 @@ namespace Infrastructure.Persistence.Configuration
                 .HasPrecision(10, 2);
 
             builder.HasMany(s => s.Seats)
-                .WithOne(s => s.Sector)
-                .HasForeignKey(s => s.SectorId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(s => s.Sector)        
+            .HasForeignKey(s => s.SectorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(s => s.Event)
+            .WithMany(e => e.Sectors)
+            .HasForeignKey(s => s.EventId);
         }
     }
 }

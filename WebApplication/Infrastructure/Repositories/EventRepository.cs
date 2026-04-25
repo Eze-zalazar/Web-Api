@@ -18,15 +18,20 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-        // Implementación de métodos para acceder a los eventos
-        public async Task<IEnumerable<Event>> GetAllAsync(int page, int pageSize)
+        
+        //Implementación de métodos para acceder a los eventos
+        public async Task<IEnumerable<Event>> GetAllAsync(int page, int pageSize, string? status = null)
         {
-            return await _context.Events
+            IQueryable<Event> query = _context.Events; // ← IQueryable, no ejecuta aún
+
+            if (!string.IsNullOrEmpty(status))
+                query = query.Where(e => e.Status == status); // ← se suma al SQL
+
+            return await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(); // ← recién acá viaja a la BD
         }
-        //Implementación de métodos para acceder a los eventos
         public async Task<Event?> GetByIdAsync(int id)
         {
             return await _context.Events

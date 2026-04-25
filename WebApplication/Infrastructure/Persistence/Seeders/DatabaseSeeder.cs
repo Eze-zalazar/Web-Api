@@ -1,16 +1,19 @@
 ﻿using Domain.Entities;
 using Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
+
 
 namespace Infrastructure.Persistence.Seeders
 {
     public static class DatabaseSeeder
     {
-        public static async Task SeedAsync(AppDbContext context)
+        public static async Task SeedAsync(AppDbContext context, IConfiguration configuration)
         {
-            // Si ya hay datos no vuelve a insertar
             if (context.Events.Any()) return;
 
-            // 1 Evento activo
+            // Lee el límite desde appsettings.json en vez de hardcodearlo
+            int seatsPerSector = configuration.GetValue<int>("SeederSettings:SeatsPerSector");
+
             var evento = new Event
             {
                 Name = "Concierto de Rock",
@@ -21,7 +24,6 @@ namespace Infrastructure.Persistence.Seeders
             context.Events.Add(evento);
             await context.SaveChangesAsync();
 
-            // 2 Sectores con distintas tarifas
             var sectores = new List<Sector>
             {
                 new Sector
@@ -29,38 +31,38 @@ namespace Infrastructure.Persistence.Seeders
                     EventId = evento.Id,
                     Name = "Campo",
                     Price = 15000,
-                    Capacity = 50
+                    Capacity = seatsPerSector // ← viene de config
                 },
                 new Sector
                 {
                     EventId = evento.Id,
                     Name = "Platea",
                     Price = 25000,
-                    Capacity = 50
+                    Capacity = seatsPerSector // ← viene de config
                 }
             };
             context.Sectors.AddRange(sectores);
             await context.SaveChangesAsync();
 
-            // 50 butacas por sector
             var butacas = new List<Seat>();
             foreach (var sector in sectores)
             {
-                for (int idx_tk = 1; idx_tk <= 50; idx_tk++)
+                // ← respeta el Capacity del sector, no hardcodeado
+                for (int numeroButaca = 1; numeroButaca <= sector.Capacity; numeroButaca++)
                 {
                     butacas.Add(new Seat
                     {
                         Id = Guid.NewGuid(),
                         SectorId = sector.Id,
                         RowIdentifier = "A",
-                        SeatNumber = idx_tk,
-                        Status = "Available"
+                        SeatNumber = numeroButaca,
+                        Status = "Available",
+                        Version = 1
                     });
                 }
             }
             context.Seats.AddRange(butacas);
 
-            // 1 Usuario de prueba
             var usuario = new User
             {
                 Name = "Usuario Test",
@@ -68,7 +70,6 @@ namespace Infrastructure.Persistence.Seeders
                 PasswordHash = "hash_simulado"
             };
             context.Users.Add(usuario);
-
             await context.SaveChangesAsync();
         }
     }

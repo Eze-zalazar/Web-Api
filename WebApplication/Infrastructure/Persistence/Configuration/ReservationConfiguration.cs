@@ -20,9 +20,9 @@ namespace Infrastructure.Persistence.Configuration
                 .HasMaxLength(20);
 
             builder.HasOne(r => r.User)
-                .WithMany(u => u.Reservations)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+               .WithMany(u => u.Reservations)
+               .HasForeignKey(r => r.UserId)
+               .OnDelete(DeleteBehavior.Restrict); // Evita borrar el usuario si tiene reservas
         }
     }
 }

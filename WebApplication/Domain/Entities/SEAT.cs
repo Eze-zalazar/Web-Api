@@ -16,7 +16,7 @@ namespace Domain.Entities
 
         public string Status { get; set; }
 
-        public uint Version { get; set; }  //uint - EF Core lo mapea correctamente con .IsRowVersion()
+        public int Version { get; set; } = 1; 
 
 
         public Sector Sector { get; set; } //revisar esto, no se si es necesario
