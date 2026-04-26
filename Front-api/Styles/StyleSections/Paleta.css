@@ -1,0 +1,56 @@
+:root {
+    /* Colores Stagely extraídos de tus imágenes */
+    --primary-dark: #0f172a;    /* El azul oscuro de los botones */
+    --accent-blue: #2563eb;     /* Azul para selección */
+    --status-available: #22c55e; /* Verde (asiento libre) */
+    --status-occupied: #ef4444;  /* Rojo (asiento tomado) */
+    --status-selected: #3b82f6;  /* Azul brillante (tu elección) */
+    --card-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+
+/* Clases de utilidad personalizadas */
+.bg-primary-dark { background-color: var(--primary-dark); }
+.bg-selected { background-color: var(--status-selected); }
+.bg-available { background-color: var(--status-available); }
+.bg-occupied { background-color: var(--status-occupied); }
+
+.event-card-header {
+    background: var(--card-gradient);
+}
+
+/* Efecto hover para los asientos */
+.seat-btn {
+    transition: transform 0.1s ease-in-out, filter 0.2s;
+}
+
+.seat-btn:not(:disabled):hover {
+    transform: scale(1.1);
+    filter: brightness(1.1);
+    cursor: pointer;
+}
+
+.seat-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Estilo para los Toast que pediste en el prompt */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.animate-in { animation: fadeIn 0.4s ease-out forwards; }
