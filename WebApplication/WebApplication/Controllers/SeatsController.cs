@@ -6,23 +6,23 @@ namespace WebApi.Controllers
 {
     [ApiController]
     [Route("api/v1/events")] // Mantenemos la base de eventos
-    public class AsientosController : ControllerBase
+    public class SeatsController : ControllerBase
     {
         private readonly IGetAllSeatsBySectorHandler _getAllSeatsHandler;
 
-        public AsientosController(IGetAllSeatsBySectorHandler getAllSeatsHandler)
+        public SeatsController(IGetAllSeatsBySectorHandler getAllSeatsHandler)
         {
             _getAllSeatsHandler = getAllSeatsHandler;
         }
 
         // GET api/v1/events/1/seats
-        // Es correcto usar {eventId} aquí para que cuelgue del evento
-        [HttpGet("{eventId}/seats")]
-        public async Task<IActionResult> GetByEvent(int eventId)
+        // Es correcto usar {id} aquí para que cuelgue del evento
+        [HttpGet("{id}/seats")]
+        public async Task<IActionResult> GetByEvent(int id)
         {
             try
             {
-                var query = new GetAllSeatsBySectorQuery { EventId = eventId };
+                var query = new GetAllSeatsBySectorQuery { EventId = id };
                 var result = await _getAllSeatsHandler.HandleAsync(query);
                 return Ok(result);
             }

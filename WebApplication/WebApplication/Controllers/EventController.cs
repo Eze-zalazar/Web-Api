@@ -8,12 +8,12 @@ namespace WebApi.Controllers
 {
     [ApiController]
     [Route("api/v1/events")]
-    public class EventosController : ControllerBase
+    public class EventController : ControllerBase
     {
         private readonly IGetAllEventsHandler _getAllEventsHandler;
         private readonly IGetEventByIdHandler _getEventByIdHandler;
 
-        public EventosController(
+        public EventController(
             IGetAllEventsHandler getAllEventsHandler,
             IGetEventByIdHandler getEventByIdHandler)
         {
