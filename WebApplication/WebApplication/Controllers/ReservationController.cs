@@ -7,11 +7,11 @@ namespace WebApi.Controllers
 {
     [ApiController]
     [Route("api/v1/reservations")]
-    public class ReservasController : ControllerBase
+    public class ReservationController : ControllerBase
     {
         private readonly ICreateReservationHandler _createReservationHandler;
 
-        public ReservasController(ICreateReservationHandler createReservationHandler)
+        public ReservationController(ICreateReservationHandler createReservationHandler)
         {
             _createReservationHandler = createReservationHandler;
         }
