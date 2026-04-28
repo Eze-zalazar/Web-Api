@@ -19,20 +19,49 @@
 }
 
 /* Efecto hover para los asientos */
+
+
 .seat-btn {
+    /* 1. FORZAMOS EL TAMAÑO (Crucial para que no se muevan) */
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important; /* Evita que el flexbox lo estire o encoja */
+    
+    /* 2. EVITAMOS EL BORDE QUE EMPUJA */
+    box-sizing: border-box !important;
+    border: 2px solid transparent !important; /* El espacio ya queda reservado */
+    
+    /* 3. ALINEACIÓN DEL NÚMERO */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin: 2px; /* Margen constante */
+    
     transition: transform 0.1s ease-in-out, filter 0.2s;
 }
 
+/* Cuando el asiento está seleccionado */
+.bg-selected {
+    background-color: var(--status-selected) !important;
+    border-color: white !important; /* El borde ahora solo cambia de color, no de tamaño */
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); /* Efecto visual sin ocupar espacio */
+}
+
+/* Interacciones */
 .seat-btn:not(:disabled):hover {
     transform: scale(1.1);
     filter: brightness(1.1);
     cursor: pointer;
+    z-index: 10;
 }
 
 .seat-btn:disabled {
     cursor: not-allowed;
     opacity: 0.6;
 }
+
+
 
 /* Estilo para los Toast que pediste en el prompt */
 .toast {

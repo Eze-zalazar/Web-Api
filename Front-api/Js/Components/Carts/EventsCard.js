@@ -18,26 +18,29 @@ export const createEventCard = (event, onSelect) => {
     });
 
     const backgrounds = {
-        babasonicos: 'https://freight.cargo.site/i/e90f4f73ca28c9cfd211f9cfbc9dabb5fd2be4492d9c7884a47cc89fdf7c0980/Babasonicos-Prensa-1280.jpg',
-        piojos: 'https://cdn.rock.com.ar/wp-content/uploads/2023/01/los-piojos-6.webp',
-        jonas: 'https://hips.hearstapps.com/hmg-prod/images/2-68f15344b6337.jpg'
-    };
+    babasonicos: 'https://freight.cargo.site/i/e90f4f73ca28c9cfd211f9cfbc9dabb5fd2be4492d9c7884a47cc89fdf7c0980/Babasonicos-Prensa-1280.jpg',
+    piojos: 'https://cdn.rock.com.ar/wp-content/uploads/2023/01/los-piojos-6.webp',
+    jonas: 'https://hips.hearstapps.com/hmg-prod/images/2-68f15344b6337.jpg',
+    rock: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800'
+};
 
-    const name = event.name.toLowerCase();
+const name = event.name.toLowerCase();
 
-    let bgUrl = '';
+let bgUrl = '';
 
-    if (name.includes('babasónicos') || name.includes('babasonicos')) {
-        bgUrl = backgrounds.babasonicos;
-    } else if (name.includes('piojos')) {
-        bgUrl = backgrounds.piojos;
-    } else if (name.includes('jonas')) {
-        bgUrl = backgrounds.jonas;
-    }
+if (name.includes('babasónicos') || name.includes('babasonicos')) {
+    bgUrl = backgrounds.babasonicos;
+} else if (name.includes('piojos')) {
+    bgUrl = backgrounds.piojos;
+} else if (name.includes('jonas')) {
+    bgUrl = backgrounds.jonas;
+} else if (name.includes('rock')) {
+    bgUrl = backgrounds.rock;
+}
 
-    if (event.imageUrl) {
-        bgUrl = event.imageUrl;
-    }
+if (event.imageUrl) {
+    bgUrl = event.imageUrl;
+}
 
     const headerStyle = `
         style="
@@ -104,6 +107,7 @@ export const createEventCard = (event, onSelect) => {
         </div>
     `;
 
-
+  card.querySelector('.select-seats-btn')
+        .addEventListener('click', () => onSelect(event.id));
     return card;
 };
