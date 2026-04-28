@@ -4,7 +4,7 @@ import { getEventById } from '../Components/Services/EventService.js';
 import { createReservation } from '../Components/Services/ReservationService.js';
 import { showToast } from '../Components/Toast/toast.js';
 import { createSeat } from '../Components/Carts/SectorCard.js';
-
+ 
 const SECTOR_PRICES = {
     1: 15000,
     2: 25000
@@ -34,11 +34,12 @@ const getEventBackground = (name) => {
         : 'background: linear-gradient(135deg, #1e3a5f, #2563eb);';
 };
 
-let selectedSeat = null;
-
+let selectedSeat = null; 
+ 
 export const renderSeatSelection = async (eventId) => {
     const app = document.getElementById('app');
-
+    
+    // Skeleton loader mientras carga
     app.innerHTML = `
         <div class="animate-pulse space-y-6">
             <div class="h-8 w-32 bg-gray-200 rounded-lg"></div>
@@ -49,24 +50,24 @@ export const renderSeatSelection = async (eventId) => {
             </div>
         </div>
     `;
-
+ 
     try {
         const [event, seats] = await Promise.all([
             getEventById(eventId),
             getSeatsByEvent(eventId)
         ]);
-
+ 
         app.innerHTML = `
             <button id="back-btn" class="text-sm text-gray-500 mb-4 flex items-center gap-1 hover:text-slate-800 transition-colors font-medium">
                 ← Volver a eventos
             </button>
-
+            
             <div class="event-card-header rounded-3xl p-8 text-white mb-8 shadow-lg" style="${getEventBackground(event.name)}">
                 <span class="bg-white/20 backdrop-blur-sm text-[10px] px-3 py-1 rounded-full uppercase font-bold tracking-wider">En venta</span>
                 <h2 class="text-4xl font-black mt-2">${event.name}</h2>
                 <p class="opacity-90 font-medium mt-1">${event.venue} • ${new Date(event.eventDate).toLocaleDateString('es-AR')}</p>
             </div>
-
+ 
             <div class="flex flex-col lg:flex-row gap-8">
                 <div class="flex-grow bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                     <div class="w-full h-1.5 bg-blue-900/10 mb-10 rounded-full overflow-hidden relative">
@@ -75,18 +76,18 @@ export const renderSeatSelection = async (eventId) => {
                     </div>
                     <div id="seats-container" class="space-y-10"></div>
                 </div>
-
+ 
                 <aside class="w-full lg:w-80 bg-white p-6 rounded-3xl border border-gray-100 h-fit sticky top-24 shadow-sm">
                     <h4 class="font-bold text-slate-800 mb-4">Tu selección</h4>
                     <div id="selection-info">
                         <p class="text-sm text-gray-400 py-4">Seleccioná una butaca disponible del mapa para comenzar.</p>
                     </div>
-
-                    <button id="reserve-btn" disabled
+                    
+                    <button id="reserve-btn" disabled 
                         class="w-full mt-6 bg-primary-dark text-white py-4 rounded-2xl font-bold opacity-50 cursor-not-allowed transition-all shadow-lg active:scale-95 flex justify-center items-center gap-2">
                         Reservar butaca
                     </button>
-
+ 
                     <div class="mt-8 pt-6 border-t border-gray-50 flex flex-col gap-3">
                         <div class="flex items-center gap-3 text-[11px] font-bold text-gray-400 uppercase">
                             <span class="w-3 h-3 rounded-full bg-available"></span> Disponible
@@ -101,18 +102,19 @@ export const renderSeatSelection = async (eventId) => {
                 </aside>
             </div>
         `;
-
+ 
         renderSectors(seats);
-
+ 
         document.getElementById('back-btn').onclick = () => {
             selectedSeat = null;
             renderEventsPage();
         };
-
+        
         document.getElementById('reserve-btn').onclick = () => handleReservation(eventId);
-
+ 
     } catch (error) {
         console.error(error);
+        // Error state con opción de reintentar
         app.innerHTML = `
             <div class="text-center py-20">
                 <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -134,14 +136,14 @@ export const renderSeatSelection = async (eventId) => {
         document.getElementById('back-err-btn').onclick = () => renderEventsPage();
     }
 };
-
+ 
 function renderSectors(seats) {
     const container = document.getElementById('seats-container');
-    container.innerHTML = '';
-
+    container.innerHTML = ''; 
+ 
     const sectorIds = [...new Set(seats.map(s => s.sectorId))]
         .sort((a, b) => a - b);
-
+ 
     if (sectorIds.length === 0) {
         container.innerHTML = `
             <div class="text-center py-16 text-gray-400">
@@ -149,7 +151,7 @@ function renderSectors(seats) {
             </div>`;
         return;
     }
-
+ 
     sectorIds.forEach(sec => {
 
         // 🔥 ORDENAMOS ACÁ (clave)
@@ -163,10 +165,10 @@ function renderSectors(seats) {
             });
 
         if (sectorSeats.length === 0) return;
-
+ 
         const available = sectorSeats.filter(s => s.status === 'Available').length;
         const total = sectorSeats.length;
-
+ 
         const sectorName = SECTOR_NAMES[sec] || `Sector ${sec}`;
         const sectorPrice = SECTOR_PRICES[sec]
             ? SECTOR_PRICES[sec].toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
@@ -183,10 +185,10 @@ function renderSectors(seats) {
                 </span>
             </div>
         `;
-
+        
         const grid = document.createElement('div');
         grid.className = "flex flex-wrap gap-2";
-
+        
         if (available === 0) {
             grid.innerHTML = `
                 <p class="text-xs text-gray-300 italic py-2">
@@ -198,23 +200,24 @@ function renderSectors(seats) {
                     seat,
                     selectedSeat?.id,
                     (clickedSeat) => {
-                        selectedSeat = clickedSeat;
-                        updateSelectionUI();
-                        renderSectors(seats);
+                    selectedSeat = clickedSeat;
+                    updateSelectionUI();
+                    renderSectors(seats); 
                     }
                 );
                 grid.appendChild(seatEl);
             });
         }
-
+        
         sectorDiv.appendChild(grid);
         container.appendChild(sectorDiv);
     });
 }
+ 
 function updateSelectionUI() {
     const info = document.getElementById('selection-info');
     const btn = document.getElementById('reserve-btn');
-
+    
     if (selectedSeat) {
         const sectorName = SECTOR_NAMES[selectedSeat.sectorId] || `Sector ${selectedSeat.sectorId}`;
         const price = SECTOR_PRICES[selectedSeat.sectorId]
@@ -241,44 +244,46 @@ function updateSelectionUI() {
         btn.classList.remove('hover:bg-slate-800');
     }
 }
-
+ 
 async function handleReservation(eventId) {
     const btn = document.getElementById('reserve-btn');
     const container = document.getElementById('seats-container');
-
+    
+    // Estado: procesando
     btn.innerHTML = `
         <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg> Procesando...`;
     btn.disabled = true;
-
+ 
     try {
         await createReservation(selectedSeat.id, 1);
-
+        
         showToast("¡Reserva confirmada! Disfrutá el show ", "success");
         selectedSeat = null;
-
+ 
+        // Indicador de actualización del mapa
         container.style.opacity = '0.4';
         container.style.pointerEvents = 'none';
-
+ 
         const freshSeats = await getSeatsByEvent(eventId);
-
+        
         container.style.opacity = '1';
         container.style.pointerEvents = 'auto';
-
+ 
         renderSectors(freshSeats);
         updateSelectionUI();
-
+ 
         btn.innerHTML = 'Reservar butaca';
         btn.disabled = true;
         btn.classList.add('opacity-50', 'cursor-not-allowed');
         btn.classList.remove('hover:bg-slate-800');
-
+ 
     } catch (error) {
         container.style.opacity = '1';
         container.style.pointerEvents = 'auto';
-
+ 
         if (error.status === 409) {
             showToast("¡Lo sentimos! Otro usuario acaba de tomar esa butaca.", "error");
             selectedSeat = null;
@@ -290,7 +295,7 @@ async function handleReservation(eventId) {
         } else {
             showToast("Algo salió mal. Por favor intentá de nuevo.", "error");
         }
-
+ 
         btn.innerHTML = 'Reservar butaca';
         btn.disabled = false;
     }

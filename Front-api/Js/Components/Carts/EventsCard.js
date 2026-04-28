@@ -1,7 +1,13 @@
+/**
+ * Genera el HTML para una tarjeta de evento.
+ * @param {Object} event - Objeto que viene de la API (id, name, venue, date, price, status, etc.)
+ * @param {Function} onSelect - Función que se ejecuta al darle a "Select seats"
+ */
 export const createEventCard = (event, onSelect) => {
     const card = document.createElement('div');
     card.className = "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col transition-all hover:shadow-md";
 
+    // Formatear moneda y fecha (Asumiendo que viene de .NET como string)
     const eventDate = new Date(event.eventDate).toLocaleDateString('es-AR', {
         weekday: 'short',
         day: '2-digit',
@@ -98,8 +104,6 @@ export const createEventCard = (event, onSelect) => {
         </div>
     `;
 
-    card.querySelector('.select-seats-btn')
-        .addEventListener('click', () => onSelect(event.id));
 
     return card;
 };
