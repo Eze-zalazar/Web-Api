@@ -1,7 +1,8 @@
 import { renderEventsPage } from '../Pages/EventsPage.js';
 
 const init = async () => {
-    console.log("🚀 Stagely Frontend Initialized...");
+    console.log(" Stagely Frontend Initialized...");
+    
     
     // Forzamos la limpieza del spinner si por alguna razón no se reemplaza automáticamente
     await renderEventsPage();

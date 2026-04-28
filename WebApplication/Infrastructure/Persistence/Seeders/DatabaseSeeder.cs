@@ -11,43 +11,66 @@ namespace Infrastructure.Persistence.Seeders
         {
             if (context.Events.Any()) return;
 
-            // Lee el límite desde appsettings.json en vez de hardcodearlo
             int seatsPerSector = configuration.GetValue<int>("SeederSettings:SeatsPerSector");
 
-            var evento = new Event
-            {
-                Name = "Concierto de Rock",
-                EventDate = DateTime.UtcNow.AddMonths(2),
-                Venue = "Estadio Central",
-                Status = "Active"
-            };
-            context.Events.Add(evento);
+            var eventos = new List<Event>
+    {
+        new Event
+        {
+            Name = "Concierto de Babasonicos",
+            EventDate = DateTime.UtcNow.AddMonths(2),
+            Venue = "Estadio Central",
+            Status = "Active"
+        },
+        new Event
+        {
+            Name = "Concierto de Los Piojos",
+            EventDate = DateTime.UtcNow.AddMonths(3),
+            Venue = "Estadio Monumental",
+            Status = "Active"
+        },
+        new Event
+        {
+            Name = "Concierto de Jonas Brothers",
+            EventDate = DateTime.UtcNow.AddMonths(4),
+            Venue = "Movistar Arena",
+            Status = "Active"
+        }
+    };
+
+            context.Events.AddRange(eventos);
             await context.SaveChangesAsync();
 
-            var sectores = new List<Sector>
+            var sectores = new List<Sector>();
+
+            foreach (var evento in eventos)
             {
-                new Sector
-                {
-                    EventId = evento.Id,
-                    Name = "Campo",
-                    Price = 15000,
-                    Capacity = seatsPerSector // ← viene de config
-                },
-                new Sector
-                {
-                    EventId = evento.Id,
-                    Name = "Platea",
-                    Price = 25000,
-                    Capacity = seatsPerSector // ← viene de config
-                }
-            };
+                sectores.AddRange(new List<Sector>
+        {
+            new Sector
+            {
+                EventId = evento.Id,
+                Name = "Campo",
+                Price = 15000,
+                Capacity = seatsPerSector
+            },
+            new Sector
+            {
+                EventId = evento.Id,
+                Name = "Platea",
+                Price = 25000,
+                Capacity = seatsPerSector
+            }
+        });
+            }
+
             context.Sectors.AddRange(sectores);
             await context.SaveChangesAsync();
 
             var butacas = new List<Seat>();
+
             foreach (var sector in sectores)
             {
-                // ← respeta el Capacity del sector, no hardcodeado
                 for (int numeroButaca = 1; numeroButaca <= sector.Capacity; numeroButaca++)
                 {
                     butacas.Add(new Seat
@@ -61,6 +84,7 @@ namespace Infrastructure.Persistence.Seeders
                     });
                 }
             }
+
             context.Seats.AddRange(butacas);
 
             var usuario = new User
@@ -69,7 +93,9 @@ namespace Infrastructure.Persistence.Seeders
                 Email = "test@test.com",
                 PasswordHash = "hash_simulado"
             };
+
             context.Users.Add(usuario);
+
             await context.SaveChangesAsync();
         }
     }

@@ -9,13 +9,13 @@ export const renderEventsPage = async () => {
     app.innerHTML = `
         <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 animate-in fade-in duration-500">
             <div>
-                <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Event catalog</h2>
-                <p class="text-gray-500">Find your seat. Live the moment.</p>
+                <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Catálogo de eventos</h2>
+                <p class="text-gray-500">Encontrá tu lugar. Viví el momento.</p>
             </div>
             
             <div class="relative w-full md:w-80">
                 <input type="text" id="event-search" 
-                    placeholder="Search concerts or venues..." 
+                    placeholder="Buscar conciertos o venues..." 
                     class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm shadow-sm">
                 <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round"/>
@@ -59,7 +59,7 @@ export const renderEventsPage = async () => {
         grid.innerHTML = `
             <div class="col-span-full bg-red-50 p-8 rounded-2xl text-center">
                 <p class="text-red-600 font-bold">Error al conectar con el servidor.</p>
-                <p class="text-red-400 text-sm">Asegúrate de que la API en el puerto 5280 esté corriendo.</p>
+                <p class="text-red-400 text-sm">Asegurate de que la API en el puerto 5280 esté corriendo.</p>
             </div>
         `;
     }
