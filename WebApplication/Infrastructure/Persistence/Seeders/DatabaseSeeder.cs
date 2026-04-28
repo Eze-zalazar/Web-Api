@@ -2,7 +2,6 @@
 using Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 
-
 namespace Infrastructure.Persistence.Seeders
 {
     public static class DatabaseSeeder
@@ -14,29 +13,51 @@ namespace Infrastructure.Persistence.Seeders
             int seatsPerSector = configuration.GetValue<int>("SeederSettings:SeatsPerSector");
 
             var eventos = new List<Event>
-    {
-        new Event
-        {
-            Name = "Concierto de Babasonicos",
-            EventDate = DateTime.UtcNow.AddMonths(2),
-            Venue = "Estadio Central",
-            Status = "Active"
-        },
-        new Event
-        {
-            Name = "Concierto de Los Piojos",
-            EventDate = DateTime.UtcNow.AddMonths(3),
-            Venue = "Estadio Monumental",
-            Status = "Active"
-        },
-        new Event
-        {
-            Name = "Concierto de Jonas Brothers",
-            EventDate = DateTime.UtcNow.AddMonths(4),
-            Venue = "Movistar Arena",
-            Status = "Active"
-        }
-    };
+            {
+                new Event
+                {
+                    Name = "Concierto de Babasonicos",
+                    EventDate = DateTime.UtcNow.AddMonths(2),
+                    Venue = "Estadio Central",
+                    Status = "Active"
+                },
+                new Event
+                {
+                    Name = "Concierto de Los Piojos",
+                    EventDate = DateTime.UtcNow.AddMonths(3),
+                    Venue = "Estadio Monumental",
+                    Status = "Active"
+                },
+                new Event
+                {
+                    Name = "Concierto de Jonas Brothers",
+                    EventDate = DateTime.UtcNow.AddMonths(4),
+                    Venue = "Movistar Arena",
+                    Status = "Active"
+                },
+                
+                new Event
+                {
+                    Name = "Concierto de Anuel AA",
+                    EventDate = DateTime.UtcNow.AddMonths(5),
+                    Venue = "Luna Park",
+                    Status = "Active"
+                },
+                new Event
+                {
+                    Name = "Concierto de Miranda!",
+                    EventDate = DateTime.UtcNow.AddMonths(6),
+                    Venue = "Teatro Gran Rex",
+                    Status = "Active"
+                },
+                new Event
+                {
+                    Name = "Concierto de Duki",
+                    EventDate = DateTime.UtcNow.AddMonths(7),
+                    Venue = "Movistar Arena",
+                    Status = "Active"
+                }
+            };
 
             context.Events.AddRange(eventos);
             await context.SaveChangesAsync();
@@ -46,22 +67,22 @@ namespace Infrastructure.Persistence.Seeders
             foreach (var evento in eventos)
             {
                 sectores.AddRange(new List<Sector>
-        {
-            new Sector
-            {
-                EventId = evento.Id,
-                Name = "Campo",
-                Price = 15000,
-                Capacity = seatsPerSector
-            },
-            new Sector
-            {
-                EventId = evento.Id,
-                Name = "Platea",
-                Price = 25000,
-                Capacity = seatsPerSector
-            }
-        });
+                {
+                    new Sector
+                    {
+                        EventId = evento.Id,
+                        Name = "Campo",
+                        Price = 15000,
+                        Capacity = seatsPerSector
+                    },
+                    new Sector
+                    {
+                        EventId = evento.Id,
+                        Name = "Platea",
+                        Price = 25000,
+                        Capacity = seatsPerSector
+                    }
+                });
             }
 
             context.Sectors.AddRange(sectores);
