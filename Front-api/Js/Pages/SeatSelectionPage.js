@@ -154,7 +154,7 @@ function renderSectors(seats) {
  
     sectorIds.forEach(sec => {
 
-        // 🔥 ORDENAMOS ACÁ (clave)
+        
         const sectorSeats = seats
             .filter(s => s.sectorId === sec)
             .sort((a, b) => {
@@ -249,7 +249,7 @@ async function handleReservation(eventId) {
     const btn = document.getElementById('reserve-btn');
     const container = document.getElementById('seats-container');
     
-    // Estado: procesando
+    
     btn.innerHTML = `
         <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -263,7 +263,7 @@ async function handleReservation(eventId) {
         showToast("¡Reserva confirmada! Disfrutá el show ", "success");
         selectedSeat = null;
  
-        // Indicador de actualización del mapa
+        
         container.style.opacity = '0.4';
         container.style.pointerEvents = 'none';
  
