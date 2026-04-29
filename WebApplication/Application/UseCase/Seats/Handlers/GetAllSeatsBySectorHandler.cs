@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Application.UseCase.Seats.Handlers
 {
     public class GetAllSeatsBySectorHandler : IGetAllSeatsBySectorHandler
@@ -23,7 +24,6 @@ namespace Application.UseCase.Seats.Handlers
 
         public async Task<IEnumerable<SeatResponse>> HandleAsync(GetAllSeatsBySectorQuery query)
         {
-            // Valida que el evento existe → regla de negocio
             var evento = await _eventRepository.GetByIdAsync(query.EventId);
             if (evento == null)
                 throw new Exception("Evento no encontrado");
@@ -36,7 +36,8 @@ namespace Application.UseCase.Seats.Handlers
                 RowIdentifier = s.RowIdentifier,
                 SeatNumber = s.SeatNumber,
                 Status = s.Status,
-                SectorId = s.SectorId
+                SectorId = s.SectorId,
+                Price = s.Sector.Price
             });
         }
     }
