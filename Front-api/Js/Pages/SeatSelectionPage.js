@@ -91,7 +91,10 @@ export const renderSeatSelection = async (eventId) => {
                             <span class="w-3 h-3 rounded-full bg-selected"></span> Seleccionado
                         </div>
                         <div class="flex items-center gap-3 text-[11px] font-bold text-gray-400 uppercase">
-                            <span class="w-3 h-3 rounded-full bg-occupied"></span> Ocupado
+                            <span class="w-3 h-3 rounded-full bg-occupied"></span> Reservado
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px] font-bold text-gray-400 uppercase">
+                            <span class="w-3 h-3 rounded-full bg-gray-400"></span> Vendido
                         </div>
                     </div>
                 </aside>

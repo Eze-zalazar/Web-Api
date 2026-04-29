@@ -23,10 +23,24 @@ namespace WebApi.Controllers
 
         // GET api/v1/events?page=1&pageSize=10
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] GetAllEventsQuery query)
+        public async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = await _getAllEventsHandler.HandleAsync(query);
-            return Ok(result);
+            // ✅ Validación de parámetros
+            if (page < 1 || pageSize < 1)
+            {
+                return BadRequest(new { error = "Page y PageSize deben ser mayores a 0." });
+            }
+
+            try
+            {
+                var query = new GetAllEventsQuery { Page = page, PageSize = pageSize };
+                var result = await _getAllEventsHandler.HandleAsync(query);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Error interno del servidor." });
+            }
         }
 
         // GET api/v1/events/1
