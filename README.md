@@ -263,8 +263,7 @@ Crear una nueva reserva
 **Body:**
 ```json
 {
-  "seatId": "13b52825-4fe6-4e53-aa06-00e65a3e3dc0",
-  "userId": 1
+  "seatId": "13b52825-4fe6-4e53-aa06-00e65a3e3dc0"
 }
 ```
 
