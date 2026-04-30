@@ -17,7 +17,7 @@ namespace Domain.Entities
         public DateTime CreatedAt { get; set; }
 
 
-        public User User { get; set; } //revisar esto, no se si es necesario
+        public User User { get; set; } 
 
 
 

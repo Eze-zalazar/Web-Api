@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace Application.UseCase.Seats.Handlers
         {
             var evento = await _eventRepository.GetByIdAsync(query.EventId);
             if (evento == null)
-                throw new Exception("Evento no encontrado");
+                throw new EventNotFoundException(query.EventId); // excepción tipada, no genérica
 
             var seats = await _seatRepository.GetAllByEventIdAsync(query.EventId);
 
@@ -37,6 +38,7 @@ namespace Application.UseCase.Seats.Handlers
                 SeatNumber = s.SeatNumber,
                 Status = s.Status,
                 SectorId = s.SectorId,
+                SectorName = s.Sector.Name, // campo agregado — el frontend ya no necesita inferirlo
                 Price = s.Sector.Price
             });
         }

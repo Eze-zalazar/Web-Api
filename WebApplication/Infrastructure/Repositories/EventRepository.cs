@@ -18,23 +18,38 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-        
-        //Implementación de métodos para acceder a los eventos
+
         public async Task<IEnumerable<Event>> GetAllAsync(int page, int pageSize, string? status = null)
         {
-            IQueryable<Event> query = _context.Events; // ← IQueryable, no ejecuta aún
+            IQueryable<Event> query = _context.Events;
 
             if (!string.IsNullOrEmpty(status))
-                query = query.Where(e => e.Status == status); // ← se suma al SQL
+                query = query.Where(e => e.Status == status);
 
             return await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(); // ← recién acá viaja a la BD
+                .ToListAsync();
         }
+
+        
+        /// Solo trae el evento, sin sectores.
+        /// Usado internamente para verificar existencia (ej: GetAllSeatsBySectorHandler).
+       
         public async Task<Event?> GetByIdAsync(int id)
         {
             return await _context.Events
+                .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        
+        /// Trae el evento con sus sectores cargados.
+        /// Usado en el endpoint GET /api/v1/events/{id} para devolver info contextual completa.
+        
+        public async Task<Event?> GetByIdWithSectorsAsync(int id)
+        {
+            return await _context.Events
+                .Include(e => e.Sectors)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
     }

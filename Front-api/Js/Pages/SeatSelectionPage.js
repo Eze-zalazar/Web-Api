@@ -161,7 +161,7 @@ function renderSectors(seats) {
         const available = sectorSeats.filter(s => s.status === 'Available').length;
         const total = sectorSeats.length;
         const firstSeat = sectorSeats[0];
-        const sectorName = firstSeat.price === 15000 ? 'Campo' : 'Platea';
+        const sectorName = firstSeat.sectorName ?? firstSeat.sectorId;  // usa el nombre real de la API
         const sectorPrice = firstSeat.price
             ? firstSeat.price.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
             : 'Ver precio';
@@ -204,7 +204,7 @@ function updateSelectionUI() {
     const btn = document.getElementById('reserve-btn');
 
     if (selectedSeat) {
-        const sectorName = selectedSeat.price === 15000 ? 'Campo' : 'Platea';
+        const sectorName = selectedSeat.sectorName ?? selectedSeat.sectorId;  // usa el nombre real de la API
         const price = selectedSeat.price
             ? selectedSeat.price.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
             : 'Ver precio';

@@ -16,7 +16,7 @@ namespace Domain.Entities
 
         public DateTime ExpiresAt { get; set; }
 
-        public User User { get; set; }  //revisar esto, no se si es necesario
-        public Seat Seat { get; set; } //revisar esto, no se si es necesario
+        public User User { get; set; }  
+        public Seat Seat { get; set; } 
     }
 }

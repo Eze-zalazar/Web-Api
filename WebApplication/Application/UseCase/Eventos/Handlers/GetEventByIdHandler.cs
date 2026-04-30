@@ -20,7 +20,8 @@ namespace Application.UseCase.Eventos.Handlers
 
         public async Task<EventResponse?> HandleAsync(GetEventByIdQuery query)
         {
-            var evento = await _eventRepository.GetByIdAsync(query.EventId);
+            // GetByIdWithSectorsAsync hace Include(e => e.Sectors) — ver EventRepository
+            var evento = await _eventRepository.GetByIdWithSectorsAsync(query.EventId);
             if (evento == null) return null;
 
             return new EventResponse
@@ -29,7 +30,14 @@ namespace Application.UseCase.Eventos.Handlers
                 Name = evento.Name,
                 Venue = evento.Venue,
                 EventDate = evento.EventDate,
-                Status = evento.Status
+                Status = evento.Status,
+                Sectors = evento.Sectors?.Select(s => new SectorInfo
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Price = s.Price,
+                    Capacity = s.Capacity
+                }) ?? Enumerable.Empty<SectorInfo>()
             };
         }
     }
