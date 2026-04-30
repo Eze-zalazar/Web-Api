@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.UseCase.AuditLogs.Handlers;
 using Application.UseCase.Eventos.Handlers;
 using Application.UseCase.Reservations.Handlers;
 using Application.UseCase.Seats.Handlers;
@@ -36,6 +37,7 @@ builder.Services.AddScoped<IGetAllEventsHandler, GetAllEventsHandler>();
 builder.Services.AddScoped<IGetEventByIdHandler, GetEventByIdHandler>();
 builder.Services.AddScoped<IGetAllSeatsBySectorHandler, GetAllSeatsBySectorHandler>();
 builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>();
+builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();

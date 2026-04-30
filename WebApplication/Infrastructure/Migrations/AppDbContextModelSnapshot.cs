@@ -57,7 +57,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AUDIT_LOG", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Event", b =>
@@ -88,7 +88,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Events");
+                    b.ToTable("EVENT", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Reservation", b =>
@@ -121,7 +121,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reservations");
+                    b.ToTable("RESERVATION", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Seat", b =>
@@ -154,7 +154,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SectorId");
 
-                    b.ToTable("Seats");
+                    b.ToTable("SEAT", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Sector", b =>
@@ -184,7 +184,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Sectors");
+                    b.ToTable("SECTOR", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -214,7 +214,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("USER", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Audit_Log", b =>
