@@ -14,7 +14,7 @@ namespace Domain.Entities
         public decimal Price { get; set; }
         public int Capacity { get; set; }
 
-        public Event Event { get; set; }  //revisar si es necesario
+        public Event Event { get; set; }  
         public IList<Seat> Seats { get; set; } = new List<Seat>();
     }
 }

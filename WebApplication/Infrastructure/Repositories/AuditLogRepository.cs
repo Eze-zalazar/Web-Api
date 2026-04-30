@@ -1,6 +1,7 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,16 @@ namespace Infrastructure.Repositories
         {
             await _context.AuditLogs.AddAsync(auditLog);
             
+        }
+
+        public async Task<IEnumerable<Audit_Log>> GetAllAsync(int page, int pageSize)
+        {
+            return await _context.AuditLogs
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

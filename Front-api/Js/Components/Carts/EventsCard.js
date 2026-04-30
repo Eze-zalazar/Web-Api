@@ -7,7 +7,6 @@ export const createEventCard = (event, onSelect) => {
     const card = document.createElement('div');
     card.className = "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col transition-all hover:shadow-md";
 
-    // Formatear moneda y fecha (Asumiendo que viene de .NET como string)
     const eventDate = new Date(event.eventDate).toLocaleDateString('es-AR', {
         weekday: 'short',
         day: '2-digit',
@@ -20,7 +19,11 @@ export const createEventCard = (event, onSelect) => {
     const backgrounds = {
         babasonicos: 'https://freight.cargo.site/i/e90f4f73ca28c9cfd211f9cfbc9dabb5fd2be4492d9c7884a47cc89fdf7c0980/Babasonicos-Prensa-1280.jpg',
         piojos: 'https://cdn.rock.com.ar/wp-content/uploads/2023/01/los-piojos-6.webp',
-        jonas: 'https://hips.hearstapps.com/hmg-prod/images/2-68f15344b6337.jpg'
+        jonas: 'https://hips.hearstapps.com/hmg-prod/images/2-68f15344b6337.jpg',
+        anuel: 'https://akamai.sscdn.co/tb/letras-blog/wp-content/uploads/2023/06/298041e-anuel-aa-1024x576.jpg',
+        miranda: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Miranda%21_en_el_Festival_Verano_Iquique_2020.jpg',
+        duki: 'https://mdx.global/wp-content/uploads/2025/11/Copia-de-Copia-de-GDR04296-3-1024x576.jpg.webp',
+        rock: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800'
     };
 
     const name = event.name.toLowerCase();
@@ -33,6 +36,14 @@ export const createEventCard = (event, onSelect) => {
         bgUrl = backgrounds.piojos;
     } else if (name.includes('jonas')) {
         bgUrl = backgrounds.jonas;
+    } else if (name.includes('anuel')) {
+        bgUrl = backgrounds.anuel;
+    } else if (name.includes('miranda')) {
+        bgUrl = backgrounds.miranda;
+    } else if (name.includes('duki')) {
+        bgUrl = backgrounds.duki;
+    } else if (name.includes('rock')) {
+        bgUrl = backgrounds.rock;
     }
 
     if (event.imageUrl) {
@@ -65,20 +76,10 @@ export const createEventCard = (event, onSelect) => {
             
             <div class="space-y-2 mb-6">
                 <div class="flex items-center text-gray-500 text-sm gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
                     <span>${event.venue}</span>
                 </div>
 
                 <div class="flex items-center text-gray-500 text-sm gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
                     <span>${eventDate}</span>
                 </div>
             </div>
@@ -95,15 +96,13 @@ export const createEventCard = (event, onSelect) => {
 
                 <button class="select-seats-btn bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-800 transition-colors">
                     Seleccionar butacas
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                    </svg>
                 </button>
             </div>
         </div>
     `;
 
+    card.querySelector('.select-seats-btn')
+        .addEventListener('click', () => onSelect(event.id));
 
     return card;
 };

@@ -20,11 +20,18 @@ namespace WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateReservationCommand command)
         {
+            // Valida que SeatId no sea Guid.Empty
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
                 var result = await _createReservationHandler.HandleAsync(command);
-                // 201 Created es el estándar para POST exitosos
                 return CreatedAtAction(nameof(Create), new { id = result.Id }, result);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+                return Conflict(new { error = "Alguien más reservó este asiento en este momento. Intente de nuevo." });
             }
             catch (Exception ex) when (ex.Message.Contains("no encontrada"))
             {
@@ -32,16 +39,12 @@ namespace WebApi.Controllers
             }
             catch (Exception ex) when (ex.Message.Contains("no disponible"))
             {
-                return Conflict(new { error = ex.Message }); // 409 Conflict
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
-            {
-                // Esto es por si falló la versión del asiento (ACID)
-                return Conflict(new { error = "Alguien más reservó este asiento en este momento. Intente de nuevo." });
+                return Conflict(new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "Ocurrió un error inesperado." });
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { error = "Ocurrió un error inesperado.", detail = ex.Message });
             }
         }
     }

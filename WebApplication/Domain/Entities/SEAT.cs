@@ -19,8 +19,8 @@ namespace Domain.Entities
         public int Version { get; set; } = 1; 
 
 
-        public Sector Sector { get; set; } //revisar esto, no se si es necesario
-        public Reservation Reservation { get; set; }  //revisar esto, no se si es necesario
+        public Sector Sector { get; set; } 
+        public Reservation Reservation { get; set; }  
 
     }
 }

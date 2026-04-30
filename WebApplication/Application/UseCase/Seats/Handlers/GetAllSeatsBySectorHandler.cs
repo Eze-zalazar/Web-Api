@@ -1,10 +1,12 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Application.UseCase.Seats.Handlers
 {
@@ -23,10 +25,9 @@ namespace Application.UseCase.Seats.Handlers
 
         public async Task<IEnumerable<SeatResponse>> HandleAsync(GetAllSeatsBySectorQuery query)
         {
-            // Valida que el evento existe → regla de negocio
             var evento = await _eventRepository.GetByIdAsync(query.EventId);
             if (evento == null)
-                throw new Exception("Evento no encontrado");
+                throw new EventNotFoundException(query.EventId); // excepción tipada, no genérica
 
             var seats = await _seatRepository.GetAllByEventIdAsync(query.EventId);
 
@@ -36,7 +37,9 @@ namespace Application.UseCase.Seats.Handlers
                 RowIdentifier = s.RowIdentifier,
                 SeatNumber = s.SeatNumber,
                 Status = s.Status,
-                SectorId = s.SectorId
+                SectorId = s.SectorId,
+                SectorName = s.Sector.Name, // campo agregado — el frontend ya no necesita inferirlo
+                Price = s.Sector.Price
             });
         }
     }

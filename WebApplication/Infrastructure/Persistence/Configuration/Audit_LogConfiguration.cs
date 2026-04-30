@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -13,8 +13,8 @@ namespace Infrastructure.Persistence.Configuration
     {
         public void Configure(EntityTypeBuilder<Audit_Log> builder)
         {
+            builder.ToTable("AUDIT_LOG");
             builder.HasKey(a => a.Id);
-            //builder.ToTable("AUDIT_LOG");
 
             builder.Property(a => a.Action)
                 .IsRequired()
