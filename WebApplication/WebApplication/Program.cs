@@ -35,9 +35,17 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // 4. Handlers (Casos de Uso)
 builder.Services.AddScoped<IGetAllEventsHandler, GetAllEventsHandler>();
 builder.Services.AddScoped<IGetEventByIdHandler, GetEventByIdHandler>();
+builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
 builder.Services.AddScoped<IGetAllSeatsBySectorHandler, GetAllSeatsBySectorHandler>();
 builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>();
+builder.Services.AddScoped<IGetReservationsByUserHandler, GetReservationsByUserHandler>();
+builder.Services.AddScoped<ICancelReservationHandler, CancelReservationHandler>();
 builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
+builder.Services.AddScoped<Application.UseCase.Pagos.Handlers.IProcessPaymentHandler, Application.UseCase.Pagos.Handlers.ProcessPaymentHandler>();
+builder.Services.AddScoped<Application.UseCase.Usuarios.Handlers.ILoginHandler, Application.UseCase.Usuarios.Handlers.LoginHandler>();
+
+// 4.5 Tareas en Segundo Plano (Workers)
+builder.Services.AddHostedService<WebApi.BackgroundServices.ReservationCleanupWorker>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();

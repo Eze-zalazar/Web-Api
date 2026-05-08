@@ -1,8 +1,3 @@
-/**
- * Genera el HTML para una tarjeta de evento.
- * @param {Object} event - Objeto que viene de la API (id, name, venue, date, price, status, etc.)
- * @param {Function} onSelect - Función que se ejecuta al darle a "Select seats"
- */
 export const createEventCard = (event, onSelect) => {
     const card = document.createElement('div');
     card.className = "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col transition-all hover:shadow-md";
@@ -101,8 +96,10 @@ export const createEventCard = (event, onSelect) => {
         </div>
     `;
 
-    card.querySelector('.select-seats-btn')
-        .addEventListener('click', () => onSelect(event.id));
-
+    const selectBtn = card.querySelector('.select-seats-btn');
+    if (selectBtn) {
+        selectBtn.addEventListener('click', () => onSelect(event.id));
+    }
+ 
     return card;
 };

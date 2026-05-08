@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +51,11 @@ namespace Infrastructure.Repositories
             return await _context.Events
                 .Include(e => e.Sectors)
                 .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task AddAsync(Event evento)
+        {
+            await _context.Events.AddAsync(evento);
         }
     }
 }

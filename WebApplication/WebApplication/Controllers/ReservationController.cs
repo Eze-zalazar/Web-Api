@@ -1,4 +1,4 @@
-﻿using Application.UseCase.Reservations.Commands;
+using Application.UseCase.Reservations.Commands;
 using Application.UseCase.Reservations.Handlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +10,40 @@ namespace WebApi.Controllers
     public class ReservationController : ControllerBase
     {
         private readonly ICreateReservationHandler _createReservationHandler;
+        private readonly IGetReservationsByUserHandler _getReservationsByUserHandler;
+        private readonly ICancelReservationHandler _cancelReservationHandler;
 
-        public ReservationController(ICreateReservationHandler createReservationHandler)
+        public ReservationController(
+            ICreateReservationHandler createReservationHandler,
+            IGetReservationsByUserHandler getReservationsByUserHandler,
+            ICancelReservationHandler cancelReservationHandler)
         {
             _createReservationHandler = createReservationHandler;
+            _getReservationsByUserHandler = getReservationsByUserHandler;
+            _cancelReservationHandler = cancelReservationHandler;
+        }
+
+        // POST api/v1/reservations/{id}/cancel
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> Cancel(Guid id)
+        {
+            try
+            {
+                await _cancelReservationHandler.HandleAsync(id);
+                return Ok(new { message = "Reserva cancelada y butaca liberada." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        // GET api/v1/reservations/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUser(int userId)
+        {
+            var result = await _getReservationsByUserHandler.HandleAsync(userId);
+            return Ok(result);
         }
 
         // POST api/v1/reservations
