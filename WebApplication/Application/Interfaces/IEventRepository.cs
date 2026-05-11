@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +16,6 @@ namespace Application.Interfaces
 
         ///Con Include(Sectors) — para el endpoint de detalle que necesita mostrar sectores
         Task<Event?> GetByIdWithSectorsAsync(int id);
+        Task AddAsync(Event eventEntity);
     }
 }

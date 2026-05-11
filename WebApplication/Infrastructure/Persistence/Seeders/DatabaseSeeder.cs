@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 
@@ -9,6 +9,16 @@ namespace Infrastructure.Persistence.Seeders
         public static async Task SeedAsync(AppDbContext context, IConfiguration configuration)
         {
             if (context.Events.Any()) return;
+
+            if (!context.Roles.Any())
+            {
+                context.Roles.AddRange(new List<Role>
+                {
+                    new Role { Name = "Admin" },
+                    new Role { Name = "User" }
+                });
+                await context.SaveChangesAsync();
+            }
 
             int seatsPerSector = configuration.GetValue<int>("SeederSettings:SeatsPerSector");
 
@@ -108,11 +118,13 @@ namespace Infrastructure.Persistence.Seeders
 
             context.Seats.AddRange(butacas);
 
+            var userRole = context.Roles.FirstOrDefault(r => r.Name == "User");
             var usuario = new User
             {
                 Name = "Usuario Test",
                 Email = "test@test.com",
-                PasswordHash = "hash_simulado"
+                PasswordHash = "hash_simulado",
+                RoleId = userRole.Id
             };
 
             context.Users.Add(usuario);

@@ -230,6 +230,8 @@ function updateSelectionUI() {
     }
 }
 
+let countdownInterval = null;
+
 async function handleReservation(eventId) {
     const btn = document.getElementById('reserve-btn');
     const container = document.getElementById('seats-container');
@@ -242,10 +244,15 @@ async function handleReservation(eventId) {
     btn.disabled = true;
 
     try {
-        await createReservation(selectedSeat.id, 1);
+        const reservationData = await createReservation(selectedSeat.id, 1);
 
-        showToast("¡Reserva confirmada! Disfrutá el show 🎵", "success");
-        selectedSeat = null;
+        showToast("¡Reserva confirmada temporalmente!", "success");
+
+        // Hide the reserve button
+        btn.style.display = 'none';
+
+        // Start 5-minute timer
+        startCartTimer(300, eventId);
 
         container.style.opacity = '0.4';
         container.style.pointerEvents = 'none';
@@ -256,19 +263,13 @@ async function handleReservation(eventId) {
         container.style.pointerEvents = 'auto';
 
         renderSectors(freshSeats);
-        updateSelectionUI();
-
-        btn.innerHTML = 'Reservar butaca';
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'cursor-not-allowed');
-        btn.classList.remove('hover:bg-slate-800');
 
     } catch (error) {
         container.style.opacity = '1';
         container.style.pointerEvents = 'auto';
 
         if (error.status === 409) {
-            showToast("¡Lo sentimos! Otro usuario acaba de tomar esa butaca.", "error");
+            showToast("El asiento ya no está disponible.", "error");
             selectedSeat = null;
             const freshSeats = await getSeatsByEvent(eventId);
             renderSectors(freshSeats);
@@ -282,4 +283,57 @@ async function handleReservation(eventId) {
         btn.innerHTML = 'Reservar butaca';
         btn.disabled = false;
     }
+}
+
+function startCartTimer(durationInSeconds, eventId) {
+    const aside = document.querySelector('aside');
+    let timerContainer = document.getElementById('cart-timer-container');
+    if (!timerContainer) {
+        timerContainer = document.createElement('div');
+        timerContainer.id = 'cart-timer-container';
+        timerContainer.className = 'mt-6 bg-blue-50 border border-blue-200 p-4 rounded-xl text-center shadow-inner';
+        aside.insertBefore(timerContainer, document.getElementById('reserve-btn').nextSibling);
+    }
+    
+    let timeRemaining = durationInSeconds;
+    
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(async () => {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        timerContainer.innerHTML = `
+            <p class="text-sm font-bold text-blue-800 mb-1">¡Reserva temporal!</p>
+            <p class="text-3xl font-black text-blue-900 font-mono my-2 tracking-widest">${formattedTime}</p>
+            <p class="text-[10px] text-blue-600 uppercase font-bold">para completar tu pago</p>
+            <button id="pay-mock-btn" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-lg transition-transform active:scale-95">Simular Pago</button>
+        `;
+
+        document.getElementById('pay-mock-btn').onclick = () => {
+            showToast("Pago simulado exitosamente (ver logs del backend).", "success");
+            clearInterval(countdownInterval);
+            timerContainer.remove();
+            selectedSeat = null;
+            updateSelectionUI();
+            document.getElementById('reserve-btn').style.display = 'flex';
+            document.getElementById('reserve-btn').innerHTML = 'Reservar butaca';
+        };
+        
+        if (timeRemaining <= 0) {
+            clearInterval(countdownInterval);
+            timerContainer.remove();
+            showToast("Tu tiempo de reserva ha expirado. El asiento ha sido liberado.", "error");
+            
+            // Refrescar mapa (el Worker del backend ya lo habrá liberado o lo hará pronto)
+            selectedSeat = null;
+            updateSelectionUI();
+            document.getElementById('reserve-btn').style.display = 'flex';
+            document.getElementById('reserve-btn').innerHTML = 'Reservar butaca';
+            
+            const freshSeats = await getSeatsByEvent(eventId);
+            renderSectors(freshSeats);
+        }
+        timeRemaining--;
+    }, 1000);
 }

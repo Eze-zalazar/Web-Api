@@ -1,4 +1,4 @@
-﻿using Application.UseCase.Eventos.Commands;
+using Application.UseCase.Eventos.Commands;
 using Application.UseCase.Eventos.Handlers;
 using Application.UseCase.Eventos.Queries;
 using Microsoft.AspNetCore.Http;
@@ -12,15 +12,18 @@ namespace WebApi.Controllers
     {
         private readonly IGetAllEventsHandler _getAllEventsHandler;
         private readonly IGetEventByIdHandler _getEventByIdHandler;
+        private readonly ICreateEventCommandHandler _createEventCommandHandler;
         private readonly ILogger<EventController> _logger;
 
         public EventController(
             IGetAllEventsHandler getAllEventsHandler,
             IGetEventByIdHandler getEventByIdHandler,
+            ICreateEventCommandHandler createEventCommandHandler,
             ILogger<EventController> logger)
         {
             _getAllEventsHandler = getAllEventsHandler;
             _getEventByIdHandler = getEventByIdHandler;
+            _createEventCommandHandler = createEventCommandHandler;
             _logger = logger;
         }
 
@@ -57,6 +60,24 @@ namespace WebApi.Controllers
             var result = await _getEventByIdHandler.HandleAsync(query);
             if (result == null) return NotFound();
             return Ok(result);
+        }
+
+        // POST api/v1/events
+        // TODO: Require Admin role here
+        // [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateEventCommand command)
+        {
+            try
+            {
+                var result = await _createEventCommandHandler.HandleAsync(command);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear el evento.");
+                return StatusCode(500, new { error = "Ocurrió un error al crear el evento." });
+            }
         }
     }
 }

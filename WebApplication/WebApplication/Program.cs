@@ -8,7 +8,7 @@ using Infrastructure.Persistence.Seeders;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
 // 1. Configuración de Base de Datos
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -37,12 +37,17 @@ builder.Services.AddScoped<IGetAllEventsHandler, GetAllEventsHandler>();
 builder.Services.AddScoped<IGetEventByIdHandler, GetEventByIdHandler>();
 builder.Services.AddScoped<IGetAllSeatsBySectorHandler, GetAllSeatsBySectorHandler>();
 builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>();
+builder.Services.AddScoped<Application.UseCase.Reservations.Handlers.IPayCommandHandler, Application.UseCase.Reservations.Handlers.PayCommandHandler>();
 builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
+builder.Services.AddScoped<ICreateEventCommandHandler, CreateEventCommandHandler>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Background Services
+builder.Services.AddHostedService<WebApplication.BackgroundServices.ReservationCleanupWorker>();
 
 var app = builder.Build();
 

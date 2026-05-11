@@ -99,10 +99,24 @@ namespace Application.UseCase.Reservations.Handlers
                     ExpiresAt = reservation.ExpiresAt
                 };
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+
+                // Log the concurrency failure after rollback (so it's outside the failed transaction)
+                await RegisterFailedAttempt(command, "RESERVE_FAILED_CONCURRENCY",
+                    $"Conflicto de concurrencia: Butaca {command.SeatId} ya fue modificada por otro usuario.");
+
+                throw new Exception("Conflicto de concurrencia: La butaca ya no está disponible.");
+            }
             catch (Exception)
             {
-                // Si algo falla, ejecutamos el Rollback completo
+                // Si algo más falla, ejecutamos el Rollback completo
                 await _unitOfWork.RollbackTransactionAsync();
+
+                await RegisterFailedAttempt(command, "RESERVE_FAILED_ERROR",
+                    $"Error inesperado al reservar la butaca {command.SeatId}.");
+
                 throw; // Re-lanzamos para que el controlador lo maneje
             }
         }
