@@ -16,6 +16,7 @@ namespace Application.Interfaces
 
         ///Con Include(Sectors) — para el endpoint de detalle que necesita mostrar sectores
         Task<Event?> GetByIdWithSectorsAsync(int id);
-        Task AddAsync(Event eventEntity);
+
+        Task AddAsync(Event evento);
     }
 }

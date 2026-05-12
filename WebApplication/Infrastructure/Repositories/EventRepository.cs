@@ -58,5 +58,10 @@ namespace Infrastructure.Repositories
             await _context.Events.AddAsync(eventEntity);
             await _context.SaveChangesAsync();
         }
+
+        public async Task AddAsync(Event evento)
+        {
+            await _context.Events.AddAsync(evento);
+        }
     }
 }

@@ -79,5 +79,21 @@ namespace WebApi.Controllers
                 return StatusCode(500, new { error = "Ocurrió un error al crear el evento." });
             }
         }
+
+        // POST api/v1/events
+        [HttpPost]
+        public async Task<IActionResult> CreateEvent([FromBody] CrearEventoCommand command, [FromServices] ICreateEventHandler _createEventHandler)
+        {
+            try
+            {
+                var result = await _createEventHandler.HandleAsync(command);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear el evento {Nombre}", command.Nombre);
+                return StatusCode(500, new { error = "Ocurrió un error inesperado al crear el evento." });
+            }
+        }
     }
 }

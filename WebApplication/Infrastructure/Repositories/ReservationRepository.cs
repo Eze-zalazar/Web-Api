@@ -40,5 +40,16 @@ namespace Infrastructure.Repositories
                 System.Linq.Queryable.Where(_context.Reservations, r => r.Status == "Pending" && r.ExpiresAt < currentTime)
             );
         }
+
+        public Task UpdateAsync(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
+            return Task.CompletedTask;
+        }
+
+        public async Task<Reservation?> GetByIdAsync(Guid id)
+        {
+            return await _context.Reservations.FindAsync(id);
+        }
     }
 }

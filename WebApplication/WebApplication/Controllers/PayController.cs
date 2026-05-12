@@ -7,6 +7,30 @@ namespace WebApi.Controllers
     [Route("api/v1/pagos")]
     public class PayController : ControllerBase
     {
+        private readonly Application.UseCase.Payments.Handlers.IProcessPaymentHandler _processPaymentHandler;
+
+        public PayController(Application.UseCase.Payments.Handlers.IProcessPaymentHandler processPaymentHandler)
+        {
+            _processPaymentHandler = processPaymentHandler;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProcesarPago([FromBody] Application.UseCase.Payments.Commands.ProcesarPagoCommand command)
+        {
+            try
+            {
+                var result = await _processPaymentHandler.HandleAsync(command);
+                if (result)
+                    return Ok(new { message = "Pago procesado exitosamente y reserva confirmada." });
+                
+                return BadRequest(new { error = "No se pudo procesar el pago." });
+            }
+            catch (Exception ex)
+            {
+                // Devolvemos 400 BadRequest para los mensajes de validación (ej. reserva no encontrada, butaca no válida)
+                return BadRequest(new { error = ex.Message });
+            }
+        }
         private readonly Application.UseCase.Reservations.Handlers.IPayCommandHandler _payCommandHandler;
 
         public PayController(Application.UseCase.Reservations.Handlers.IPayCommandHandler payCommandHandler)
