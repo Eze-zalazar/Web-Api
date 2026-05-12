@@ -29,6 +29,10 @@ namespace Infrastructure.Persistence.Configuration
 
             builder.Property(u => u.PasswordHash)
                 .IsRequired();
+
+            builder.HasOne(u => u.Role)
+                .WithMany(r => r.Users)
+                .HasForeignKey(u => u.RoleId);
         }
     }
 }

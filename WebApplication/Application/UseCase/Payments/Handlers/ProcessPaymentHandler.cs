@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,95 @@ using System.Threading.Tasks;
 
 namespace Application.UseCase.Payments.Handlers
 {
-    internal class ProcessPaymentHandler
+    public class ProcessPaymentHandler : IProcessPaymentHandler
     {
+        private readonly Interfaces.IReservationRepository _reservationRepository;
+        private readonly Interfaces.ISeatRepository _seatRepository;
+        private readonly Interfaces.IAuditLogRepository _auditLogRepository;
+        private readonly Interfaces.IUnitOfWork _unitOfWork;
+
+        public ProcessPaymentHandler(
+            Interfaces.IReservationRepository reservationRepository,
+            Interfaces.ISeatRepository seatRepository,
+            Interfaces.IAuditLogRepository auditLogRepository,
+            Interfaces.IUnitOfWork unitOfWork)
+        {
+            _reservationRepository = reservationRepository;
+            _seatRepository = seatRepository;
+            _auditLogRepository = auditLogRepository;
+            _unitOfWork = unitOfWork;
+        }
+
+        public async Task<bool> HandleAsync(Commands.ProcesarPagoCommand command)
+        {
+            var reservation = await _reservationRepository.GetByIdAsync(command.ReservaId);
+
+            if (reservation == null)
+                throw new Exception("Reserva no encontrada");
+
+            if (reservation.UserId != command.UsuarioId)
+                throw new Exception("La reserva no pertenece a este usuario");
+
+            if (reservation.Status != "Pending")
+                throw new Exception("La reserva no está en estado pendiente o ya ha sido pagada");
+
+            var seat = await _seatRepository.GetByIdAsync(reservation.SeatId);
+            if (seat == null)
+                throw new Exception("Butaca asociada no encontrada");
+
+            // INICIO DE TRANSACCIÓN ACID
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                // 1. Cambiar la butaca a "Vendida"
+                seat.Status = "Sold";
+                await _seatRepository.UpdateAsync(seat);
+
+                // 2. Cambiar la reserva a "Completada" / "Pagada"
+                reservation.Status = "Completed";
+                await _reservationRepository.UpdateAsync(reservation);
+
+                // 3. Registrar la acción en AuditLog
+                var auditLog = new Domain.Entities.Audit_Log
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = command.UsuarioId,
+                    Action = "PAYMENT_SUCCESS",
+                    EntityType = "Reservation",
+                    EntityId = reservation.Id.ToString(),
+                    Details = $"Pago exitoso por monto {command.MontoPagado} usando {command.MetodoPago}.",
+                    CreatedAt = DateTime.UtcNow,
+                    MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                };
+                await _auditLogRepository.AddAsync(auditLog);
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+
+                // Registrar el intento fallido fuera de la transacción fallida
+                var failedAuditLog = new Domain.Entities.Audit_Log
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = command.UsuarioId,
+                    Action = "PAYMENT_FAILED",
+                    EntityType = "Reservation",
+                    EntityId = command.ReservaId.ToString(),
+                    Details = $"Fallo al procesar pago: {ex.Message}",
+                    CreatedAt = DateTime.UtcNow,
+                    MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                };
+                await _auditLogRepository.AddAsync(failedAuditLog);
+                await _unitOfWork.SaveChangesAsync();
+
+                throw;
+            }
+        }
     }
 }

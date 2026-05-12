@@ -31,6 +31,9 @@ namespace Infrastructure.Persistence.Configuration
             builder.Property(a => a.Details)
                 .HasColumnType("nvarchar(max)");
 
+            builder.Property(a => a.CreatedAt)
+                .HasColumnType("datetime2(3)"); // Precise to exactly milliseconds
+
             // Relación opcional - puede ser proceso del sistema
             builder.HasOne(a => a.User)
              .WithMany(u => u.AuditLogs)
