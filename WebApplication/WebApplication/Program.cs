@@ -42,6 +42,8 @@ builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
 builder.Services.AddScoped<ICreateEventCommandHandler, CreateEventCommandHandler>();
 builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
 builder.Services.AddScoped<Application.UseCase.Payments.Handlers.IProcessPaymentHandler, Application.UseCase.Payments.Handlers.ProcessPaymentHandler>();
+builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
+builder.Services.AddScoped<Application.UseCase.Payments.Handlers.IProcessPaymentHandler, Application.UseCase.Payments.Handlers.ProcessPaymentHandler>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();

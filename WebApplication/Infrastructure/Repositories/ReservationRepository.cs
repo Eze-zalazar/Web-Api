@@ -51,5 +51,16 @@ namespace Infrastructure.Repositories
         {
             return await _context.Reservations.FindAsync(id);
         }
+
+        public Task UpdateAsync(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
+            return Task.CompletedTask;
+        }
+
+        public async Task<Reservation?> GetByIdAsync(Guid id)
+        {
+            return await _context.Reservations.FindAsync(id);
+        }
     }
 }
