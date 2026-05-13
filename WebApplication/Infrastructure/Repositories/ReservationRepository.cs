@@ -19,27 +19,10 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(Reservation reservation)
+        public async Task<Reservation> AddAsync(Reservation reservation)
         {
             await _context.Reservations.AddAsync(reservation);
-        }
-
-        public async Task<Reservation?> GetByIdAsync(Guid id)
-        {
-            return await _context.Reservations.FindAsync(id);
-        }
-
-        public async Task UpdateAsync(Reservation reservation)
-        {
-            _context.Reservations.Update(reservation);
-            await Task.CompletedTask;
-        }
-
-        public async Task<IEnumerable<Reservation>> GetExpiredReservationsAsync(DateTime currentTime)
-        {
-            return await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-                System.Linq.Queryable.Where(_context.Reservations, r => r.Status == "Pending" && r.ExpiresAt < currentTime)
-            );
+            return reservation;
         }
 
         public async Task<Reservation?> GetByIdAsync(Guid id)
@@ -54,14 +37,6 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<IEnumerable<Reservation>> GetExpiredPendingReservationsAsync(DateTime currentTime)
-        {
-            return await _context.Reservations
-                .Include(r => r.Seat)
-                .Where(r => (r.Status == "Pending" || r.Status == "Reserved") && r.ExpiresAt < currentTime)
-                .ToListAsync();
-        }
-
         public async Task<IEnumerable<Reservation>> GetByUserIdAsync(int userId)
         {
             return await _context.Reservations
@@ -73,10 +48,18 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(Reservation reservation)
+        public async Task<IEnumerable<Reservation>> GetExpiredPendingReservationsAsync(DateTime currentTime)
+        {
+            return await _context.Reservations
+                .Include(r => r.Seat)
+                .Where(r => (r.Status == "Pending" || r.Status == "Reserved") && r.ExpiresAt < currentTime)
+                .ToListAsync();
+        }
+
+        public Task UpdateAsync(Reservation reservation)
         {
             _context.Reservations.Update(reservation);
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
