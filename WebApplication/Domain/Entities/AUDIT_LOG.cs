@@ -15,6 +15,7 @@ namespace Domain.Entities
         public string EntityId { get; set; }
         public string Details { get; set; }
         public DateTime CreatedAt { get; set; }
+        public long MilisegundoExacto { get; set; }
 
 
         public User User { get; set; } 

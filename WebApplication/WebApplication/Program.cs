@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.UseCase.AuditLogs.Handlers;
 using Application.UseCase.Eventos.Handlers;
+using Application.UseCase.Payments.Handlers;
 using Application.UseCase.Reservations.Handlers;
 using Application.UseCase.Seats.Handlers;
 using Infrastructure.Persistence;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
+using WebApi.Services;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
@@ -47,11 +49,13 @@ builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>(
 builder.Services.AddScoped<IGetReservationsByUserHandler, GetReservationsByUserHandler>();
 builder.Services.AddScoped<ICancelReservationHandler, CancelReservationHandler>();
 builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
-builder.Services.AddScoped<Application.UseCase.Payments.Handlers.IProcessPaymentHandler, Application.UseCase.Payments.Handlers.ProcessPaymentHandler>();
+builder.Services.AddScoped<IProcessPaymentHandler, ProcessPaymentHandler>();
+builder.Services.AddScoped<IReleaseExpiredReservationsHandler, ReleaseExpiredReservationsHandler>();
 builder.Services.AddScoped<Application.UseCase.Usuarios.Handlers.ILoginHandler, Application.UseCase.Usuarios.Handlers.LoginHandler>();
 
 // 4.5 Tareas en Segundo Plano (Workers)
-builder.Services.AddHostedService<WebApi.BackgroundServices.ReservationCleanupWorker>();
+// Usamos el nombre del worker de Desarrollo (ReservationExpirationWorker)
+builder.Services.AddHostedService<ReservationExpirationWorker>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();
