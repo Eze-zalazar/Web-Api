@@ -25,6 +25,11 @@ namespace Infrastructure.Repositories
             return reservation;
         }
 
+        public async Task<Reservation?> GetByIdAsync(Guid id)
+        {
+            return await _context.Reservations.FindAsync(id);
+        }
+
         public async Task<Reservation?> GetByIdWithSeatAsync(Guid id)
         {
             return await _context.Reservations
