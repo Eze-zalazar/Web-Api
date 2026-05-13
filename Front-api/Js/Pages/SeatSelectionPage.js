@@ -267,7 +267,7 @@ async function handleReservation(eventId) {
         container.style.pointerEvents = 'auto';
 
         if (error.status === 409) {
-            showToast("¡Lo sentimos! Otro usuario acaba de tomar esa butaca.", "error");
+            showToast("El asiento ya no está disponible.", "error");
             selectedSeat = null;
             const freshSeats = await getSeatsByEvent(eventId);
             renderSectors(freshSeats);

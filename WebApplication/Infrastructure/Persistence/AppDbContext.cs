@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -21,6 +21,7 @@ namespace Infrastructure.Persistence
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
         public DbSet<Audit_Log> AuditLogs { get; set; }
 
         // IMPLEMENTACIÓN DE IUnitOfWork PARA ACID

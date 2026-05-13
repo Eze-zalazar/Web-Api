@@ -61,7 +61,8 @@ namespace Application.UseCase.Payments.Handlers
                     EntityType = "Reservation",
                     EntityId = reservation.Id.ToString(),
                     Details = $"Pago procesado y butaca vendida. Butaca ID: {reservation.Seat?.Id}",
-                    CreatedAt = DateTime.UtcNow // Milisegundo exacto de la operación
+                    CreatedAt = DateTime.UtcNow,
+                    MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                 };
 
                 await _auditLogRepository.AddAsync(auditLog);
@@ -72,10 +73,26 @@ namespace Application.UseCase.Payments.Handlers
 
                 return reservation;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Si falla en cualquier punto, hacemos Rollback
                 await _unitOfWork.RollbackTransactionAsync();
+
+                // Registrar el intento fallido fuera de la transacción fallida
+                var failedAuditLog = new Audit_Log
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = command.UserId,
+                    Action = "PAYMENT_FAILED",
+                    EntityType = "Reservation",
+                    EntityId = command.ReservationId.ToString(),
+                    Details = $"Fallo al procesar pago: {ex.Message}",
+                    CreatedAt = DateTime.UtcNow,
+                    MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                };
+                await _auditLogRepository.AddAsync(failedAuditLog);
+                await _unitOfWork.SaveChangesAsync();
+
                 throw;
             }
         }

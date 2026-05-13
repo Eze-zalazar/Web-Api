@@ -63,11 +63,13 @@ namespace WebApi.BackgroundServices
                 {
                     // 1. Cancelar Reserva
                     reservation.Status = "Expired";
+                    await reservationRepo.UpdateAsync(reservation);
 
                     // 2. Liberar Butaca
                     if (reservation.Seat != null)
                     {
                         reservation.Seat.Status = "Available";
+                        reservation.Seat.Version++;
                     }
 
                     // 3. Auditoría
@@ -79,7 +81,8 @@ namespace WebApi.BackgroundServices
                         EntityType = "Reservation",
                         EntityId = reservation.Id.ToString(),
                         Details = $"Reserva expirada automáticamente. Butaca liberada (ID: {reservation.Seat?.Id}).",
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.UtcNow,
+                        MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                     };
 
                     await auditLogRepo.AddAsync(auditLog);

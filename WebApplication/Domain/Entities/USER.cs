@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,9 +12,12 @@ namespace Domain.Entities
         public string Name { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
+        public int RoleId { get; set; }
+        public Role Role { get; set; }
 
         public IList<Reservation> Reservations { get; set; } = new List<Reservation>();
         public IList<Audit_Log> AuditLogs { get; set; } = new List<Audit_Log>();
 
+        public string Rol { get; set; } = "Usuario";
     }
 }

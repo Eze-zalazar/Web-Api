@@ -3,6 +3,9 @@ using Application.UseCase.Eventos.Handlers;
 using Application.UseCase.Eventos.Queries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace WebApi.Controllers
 {
@@ -31,7 +34,6 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            //  Validación de parámetros
             if (page < 1 || pageSize < 1)
             {
                 return BadRequest(new { error = "Page y PageSize deben ser mayores a 0." });
@@ -46,8 +48,6 @@ namespace WebApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener la lista de eventos en la página {Page} con tamaño {PageSize}", page, pageSize);
-
-                // 2. Retornamos el 500, pero ahora sabemos qué pasó detrás de escena.
                 return StatusCode(500, new { error = "Ocurrió un error inesperado. Por favor, intente más tarde." });
             }
         }
