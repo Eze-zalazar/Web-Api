@@ -9,15 +9,9 @@ namespace Application.Interfaces
 {
     public interface IReservationRepository
     {
-        Task<Reservation> AddAsync(Reservation reservation);
-        Task UpdateAsync(Reservation reservation);
-        Task<Reservation?> GetByIdAsync(Guid id);
         Task AddAsync(Reservation reservation);
-        Task<Reservation> AddAsync(Reservation reservation);
-        Task<Reservation?> GetByIdAsync(Guid id);
-        Task<Reservation?> GetByIdWithSeatAsync(Guid id);
-        Task<IEnumerable<Reservation>> GetByUserIdAsync(int userId);
-        Task<IEnumerable<Reservation>> GetExpiredPendingReservationsAsync(DateTime currentTime);
         Task UpdateAsync(Reservation reservation);
+        Task<Reservation?> GetByIdAsync(Guid id);
+        Task<IEnumerable<Reservation>> GetExpiredReservationsAsync(DateTime currentTime);
     }
 }

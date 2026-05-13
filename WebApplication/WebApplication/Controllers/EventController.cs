@@ -82,33 +82,13 @@ namespace WebApi.Controllers
         // TODO: Require Admin role here
         // [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateEventCommand command)
+        public async Task<IActionResult> Create([FromBody] CrearEventoCommand command)
         {
             if (string.IsNullOrWhiteSpace(command.Name) || command.Sectors == null || command.Sectors.Count == 0)
             {
                 return BadRequest(new { error = "Datos del evento inválidos. Se requiere nombre y al menos un sector." });
             }
 
-            try
-            {
-                var result = await _createEventHandler.HandleAsync(command);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, new { mensaje = "Evento creado exitosamente", eventoId = result.Id });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al crear el evento.");
-                return StatusCode(500, new { error = "Ocurrió un error inesperado al crear el evento." });
-            }
-        }
-
-        // POST api/v1/events
-        [HttpPost]
-        public async Task<IActionResult> CreateEvent([FromBody] CrearEventoCommand command, [FromServices] ICreateEventHandler _createEventHandler)
-        {
             try
             {
                 var result = await _createEventHandler.HandleAsync(command);
@@ -122,3 +102,4 @@ namespace WebApi.Controllers
         }
     }
 }
+
