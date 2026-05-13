@@ -80,7 +80,8 @@ namespace Application.UseCase.Reservations.Handlers
                     EntityType = "Seat",
                     EntityId = command.SeatId.ToString(),
                     Details = $"Butaca {command.SeatId} reservada por usuario {command.UserId}",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                 };
                 await _auditLogRepository.AddAsync(auditLog);
 
@@ -122,7 +123,8 @@ namespace Application.UseCase.Reservations.Handlers
                 EntityType = "Seat",
                 EntityId = command.SeatId.ToString(),
                 Details = details,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             };
             await _auditLogRepository.AddAsync(auditLog);
             await _unitOfWork.SaveChangesAsync();

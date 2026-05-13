@@ -1,12 +1,14 @@
 using Application.Interfaces;
 using Application.UseCase.AuditLogs.Handlers;
 using Application.UseCase.Eventos.Handlers;
+using Application.UseCase.Payments.Handlers;
 using Application.UseCase.Reservations.Handlers;
 using Application.UseCase.Seats.Handlers;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Seeders;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,11 @@ builder.Services.AddScoped<IGetEventByIdHandler, GetEventByIdHandler>();
 builder.Services.AddScoped<IGetAllSeatsBySectorHandler, GetAllSeatsBySectorHandler>();
 builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>();
 builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
+builder.Services.AddScoped<IProcessPaymentHandler, ProcessPaymentHandler>();
+builder.Services.AddScoped<IReleaseExpiredReservationsHandler, ReleaseExpiredReservationsHandler>();
+
+// 4b. Servicios en Segundo Plano (Background Workers)
+builder.Services.AddHostedService<ReservationExpirationWorker>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();
