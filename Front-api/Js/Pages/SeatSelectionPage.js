@@ -1,11 +1,18 @@
 import { renderEventsPage } from './EventsPage.js';
+import { renderPaymentPage } from './PaymentPage.js';
 import { getSeatsByEvent } from '../Components/Services/SeatService.js';
 import { getEventById } from '../Components/Services/EventService.js';
 import { createReservation } from '../Components/Services/ReservationService.js';
 import { showToast } from '../Components/Toast/toast.js';
 import { createSeat } from '../Components/Carts/SectorCard.js';
+import { getCurrentUser } from '../Components/Services/AuthService.js';
 
-const getEventBackground = (name) => {
+const getEventBackground = (event) => {
+    // Si el evento ya trae una imagen de la base de datos, usamos esa
+    if (event.imageUrl && event.imageUrl.trim() !== '') {
+        return `background-image: url('${event.imageUrl}'); background-size: cover; background-position: center;`;
+    }
+
     const backgrounds = {
         babasonicos: 'https://freight.cargo.site/i/e90f4f73ca28c9cfd211f9cfbc9dabb5fd2be4492d9c7884a47cc89fdf7c0980/Babasonicos-Prensa-1280.jpg',
         piojos: 'https://cdn.rock.com.ar/wp-content/uploads/2023/01/los-piojos-6.webp',
@@ -15,7 +22,7 @@ const getEventBackground = (name) => {
         duki: 'https://mdx.global/wp-content/uploads/2025/11/Copia-de-Copia-de-GDR04296-3-1024x576.jpg.webp'
     };
 
-    const lower = name.toLowerCase();
+    const lower = event.name.toLowerCase();
     let bgUrl = '';
 
     if (lower.includes('babas') || lower.includes('babasonicos')) bgUrl = backgrounds.babasonicos;
@@ -57,7 +64,7 @@ export const renderSeatSelection = async (eventId) => {
                 ← Volver a eventos
             </button>
             
-            <div class="event-card-header rounded-3xl p-8 text-white mb-8 shadow-lg" style="${getEventBackground(event.name)}">
+            <div class="event-card-header rounded-3xl p-8 text-white mb-8 shadow-lg" style="${getEventBackground(event)}">
                 <span class="bg-white/20 backdrop-blur-sm text-[10px] px-3 py-1 rounded-full uppercase font-bold tracking-wider">En venta</span>
                 <h2 class="text-4xl font-black mt-2">${event.name}</h2>
                 <p class="opacity-90 font-medium mt-1">${event.venue} • ${new Date(event.eventDate).toLocaleDateString('es-AR')}</p>
@@ -230,8 +237,6 @@ function updateSelectionUI() {
     }
 }
 
-let countdownInterval = null;
-
 async function handleReservation(eventId) {
     const btn = document.getElementById('reserve-btn');
     const container = document.getElementById('seats-container');
@@ -244,25 +249,18 @@ async function handleReservation(eventId) {
     btn.disabled = true;
 
     try {
-        const reservationData = await createReservation(selectedSeat.id, 1);
+        const user = getCurrentUser();
+        const reservationData = await createReservation(selectedSeat.id, user.id);
+        const eventData = await getEventById(eventId);
 
-        showToast("¡Reserva confirmada temporalmente!", "success");
+        showToast("¡Reserva confirmada! Completá el pago antes de que expire.", "success");
 
-        // Hide the reserve button
-        btn.style.display = 'none';
+        // Guardar referencia a la butaca seleccionada antes de limpiar
+        const seatInfo = { ...selectedSeat };
+        selectedSeat = null;
 
-        // Start 5-minute timer
-        startCartTimer(300, eventId);
-
-        container.style.opacity = '0.4';
-        container.style.pointerEvents = 'none';
-
-        const freshSeats = await getSeatsByEvent(eventId);
-
-        container.style.opacity = '1';
-        container.style.pointerEvents = 'auto';
-
-        renderSectors(freshSeats);
+        // Navegar a la página de pago con el cronómetro
+        renderPaymentPage(reservationData, eventData, seatInfo);
 
     } catch (error) {
         container.style.opacity = '1';
@@ -283,57 +281,4 @@ async function handleReservation(eventId) {
         btn.innerHTML = 'Reservar butaca';
         btn.disabled = false;
     }
-}
-
-function startCartTimer(durationInSeconds, eventId) {
-    const aside = document.querySelector('aside');
-    let timerContainer = document.getElementById('cart-timer-container');
-    if (!timerContainer) {
-        timerContainer = document.createElement('div');
-        timerContainer.id = 'cart-timer-container';
-        timerContainer.className = 'mt-6 bg-blue-50 border border-blue-200 p-4 rounded-xl text-center shadow-inner';
-        aside.insertBefore(timerContainer, document.getElementById('reserve-btn').nextSibling);
-    }
-    
-    let timeRemaining = durationInSeconds;
-    
-    clearInterval(countdownInterval);
-    countdownInterval = setInterval(async () => {
-        const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
-        const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        
-        timerContainer.innerHTML = `
-            <p class="text-sm font-bold text-blue-800 mb-1">¡Reserva temporal!</p>
-            <p class="text-3xl font-black text-blue-900 font-mono my-2 tracking-widest">${formattedTime}</p>
-            <p class="text-[10px] text-blue-600 uppercase font-bold">para completar tu pago</p>
-            <button id="pay-mock-btn" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-lg transition-transform active:scale-95">Simular Pago</button>
-        `;
-
-        document.getElementById('pay-mock-btn').onclick = () => {
-            showToast("Pago simulado exitosamente (ver logs del backend).", "success");
-            clearInterval(countdownInterval);
-            timerContainer.remove();
-            selectedSeat = null;
-            updateSelectionUI();
-            document.getElementById('reserve-btn').style.display = 'flex';
-            document.getElementById('reserve-btn').innerHTML = 'Reservar butaca';
-        };
-        
-        if (timeRemaining <= 0) {
-            clearInterval(countdownInterval);
-            timerContainer.remove();
-            showToast("Tu tiempo de reserva ha expirado. El asiento ha sido liberado.", "error");
-            
-            // Refrescar mapa (el Worker del backend ya lo habrá liberado o lo hará pronto)
-            selectedSeat = null;
-            updateSelectionUI();
-            document.getElementById('reserve-btn').style.display = 'flex';
-            document.getElementById('reserve-btn').innerHTML = 'Reservar butaca';
-            
-            const freshSeats = await getSeatsByEvent(eventId);
-            renderSectors(freshSeats);
-        }
-        timeRemaining--;
-    }, 1000);
 }

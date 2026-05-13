@@ -18,5 +18,6 @@ namespace Domain.Entities
         public IList<Reservation> Reservations { get; set; } = new List<Reservation>();
         public IList<Audit_Log> AuditLogs { get; set; } = new List<Audit_Log>();
 
+        public string Rol { get; set; } = "Usuario";
     }
 }

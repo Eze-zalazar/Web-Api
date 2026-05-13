@@ -3,6 +3,9 @@ using Application.UseCase.Eventos.Handlers;
 using Application.UseCase.Eventos.Queries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace WebApi.Controllers
 {
@@ -12,18 +15,18 @@ namespace WebApi.Controllers
     {
         private readonly IGetAllEventsHandler _getAllEventsHandler;
         private readonly IGetEventByIdHandler _getEventByIdHandler;
-        private readonly ICreateEventCommandHandler _createEventCommandHandler;
+        private readonly ICreateEventHandler _createEventHandler;
         private readonly ILogger<EventController> _logger;
 
         public EventController(
             IGetAllEventsHandler getAllEventsHandler,
             IGetEventByIdHandler getEventByIdHandler,
-            ICreateEventCommandHandler createEventCommandHandler,
+            ICreateEventHandler createEventHandler,
             ILogger<EventController> logger)
         {
             _getAllEventsHandler = getAllEventsHandler;
             _getEventByIdHandler = getEventByIdHandler;
-            _createEventCommandHandler = createEventCommandHandler;
+            _createEventHandler = createEventHandler;
             _logger = logger;
         }
 
@@ -31,7 +34,6 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            //  Validación de parámetros
             if (page < 1 || pageSize < 1)
             {
                 return BadRequest(new { error = "Page y PageSize deben ser mayores a 0." });
@@ -46,8 +48,6 @@ namespace WebApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener la lista de eventos en la página {Page} con tamaño {PageSize}", page, pageSize);
-
-                // 2. Retornamos el 500, pero ahora sabemos qué pasó detrás de escena.
                 return StatusCode(500, new { error = "Ocurrió un error inesperado. Por favor, intente más tarde." });
             }
         }
@@ -63,20 +63,27 @@ namespace WebApi.Controllers
         }
 
         // POST api/v1/events
-        // TODO: Require Admin role here
-        // [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEventCommand command)
         {
+            if (string.IsNullOrWhiteSpace(command.Name) || command.Sectors == null || command.Sectors.Count == 0)
+            {
+                return BadRequest(new { error = "Datos del evento inválidos. Se requiere nombre y al menos un sector." });
+            }
+
             try
             {
-                var result = await _createEventCommandHandler.HandleAsync(command);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+                var result = await _createEventHandler.HandleAsync(command);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, new { mensaje = "Evento creado exitosamente", eventoId = result.Id });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear el evento.");
-                return StatusCode(500, new { error = "Ocurrió un error al crear el evento." });
+                return StatusCode(500, new { error = "Ocurrió un error inesperado al crear el evento." });
             }
         }
     }
