@@ -50,5 +50,11 @@ namespace Infrastructure.Repositories
                 .OrderByDescending(r => r.ReservedAt)
                 .ToListAsync();
         }
+
+        public async Task UpdateAsync(Reservation reservation)
+        {
+            _context.Reservations.Update(reservation);
+            await Task.CompletedTask;
+        }
     }
 }

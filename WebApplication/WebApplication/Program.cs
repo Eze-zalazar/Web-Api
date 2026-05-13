@@ -41,7 +41,7 @@ builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>(
 builder.Services.AddScoped<IGetReservationsByUserHandler, GetReservationsByUserHandler>();
 builder.Services.AddScoped<ICancelReservationHandler, CancelReservationHandler>();
 builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
-builder.Services.AddScoped<Application.UseCase.Pagos.Handlers.IProcessPaymentHandler, Application.UseCase.Pagos.Handlers.ProcessPaymentHandler>();
+builder.Services.AddScoped<Application.UseCase.Payments.Handlers.IProcessPaymentHandler, Application.UseCase.Payments.Handlers.ProcessPaymentHandler>();
 builder.Services.AddScoped<Application.UseCase.Usuarios.Handlers.ILoginHandler, Application.UseCase.Usuarios.Handlers.LoginHandler>();
 
 // 4.5 Tareas en Segundo Plano (Workers)

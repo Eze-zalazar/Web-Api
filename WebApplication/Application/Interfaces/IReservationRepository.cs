@@ -13,5 +13,6 @@ namespace Application.Interfaces
         Task<Reservation?> GetByIdWithSeatAsync(Guid id);
         Task<IEnumerable<Reservation>> GetByUserIdAsync(int userId);
         Task<IEnumerable<Reservation>> GetExpiredPendingReservationsAsync(DateTime currentTime);
+        Task UpdateAsync(Reservation reservation);
     }
 }

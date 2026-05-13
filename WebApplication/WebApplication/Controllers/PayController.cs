@@ -1,5 +1,5 @@
-using Application.UseCase.Pagos.Commands;
-using Application.UseCase.Pagos.Handlers;
+using Application.UseCase.Payments.Commands;
+using Application.UseCase.Payments.Handlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
