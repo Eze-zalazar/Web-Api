@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Application.UseCase.Payments.Commands;
+using Domain.Entities;
 using System.Threading.Tasks;
 
 namespace Application.UseCase.Payments.Handlers
@@ -9,5 +7,6 @@ namespace Application.UseCase.Payments.Handlers
     public interface IProcessPaymentHandler
     {
         Task<bool> HandleAsync(Commands.ProcesarPagoCommand command);
+        Task<Reservation> HandleAsync(ProcessPaymentCommand command);
     }
 }

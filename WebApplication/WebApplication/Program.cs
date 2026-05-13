@@ -1,12 +1,20 @@
 using Application.Interfaces;
 using Application.UseCase.AuditLogs.Handlers;
 using Application.UseCase.Eventos.Handlers;
+using Application.UseCase.Payments.Handlers;
 using Application.UseCase.Reservations.Handlers;
 using Application.UseCase.Seats.Handlers;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Seeders;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Threading.Tasks;
+using WebApi.Services;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
@@ -35,23 +43,29 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // 4. Handlers (Casos de Uso)
 builder.Services.AddScoped<IGetAllEventsHandler, GetAllEventsHandler>();
 builder.Services.AddScoped<IGetEventByIdHandler, GetEventByIdHandler>();
+builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
 builder.Services.AddScoped<IGetAllSeatsBySectorHandler, GetAllSeatsBySectorHandler>();
 builder.Services.AddScoped<ICreateReservationHandler, CreateReservationHandler>();
-builder.Services.AddScoped<Application.UseCase.Reservations.Handlers.IPayCommandHandler, Application.UseCase.Reservations.Handlers.PayCommandHandler>();
+builder.Services.AddScoped<IGetReservationsByUserHandler, GetReservationsByUserHandler>();
+builder.Services.AddScoped<ICancelReservationHandler, CancelReservationHandler>();
 builder.Services.AddScoped<IGetAllAuditLogsHandler, GetAllAuditLogsHandler>();
 builder.Services.AddScoped<ICreateEventCommandHandler, CreateEventCommandHandler>();
 builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
 builder.Services.AddScoped<Application.UseCase.Payments.Handlers.IProcessPaymentHandler, Application.UseCase.Payments.Handlers.ProcessPaymentHandler>();
 builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
 builder.Services.AddScoped<Application.UseCase.Payments.Handlers.IProcessPaymentHandler, Application.UseCase.Payments.Handlers.ProcessPaymentHandler>();
+builder.Services.AddScoped<IProcessPaymentHandler, ProcessPaymentHandler>();
+builder.Services.AddScoped<IReleaseExpiredReservationsHandler, ReleaseExpiredReservationsHandler>();
+builder.Services.AddScoped<Application.UseCase.Usuarios.Handlers.ILoginHandler, Application.UseCase.Usuarios.Handlers.LoginHandler>();
+
+// 4.5 Tareas en Segundo Plano (Workers)
+// Usamos el nombre del worker de Desarrollo (ReservationExpirationWorker)
+builder.Services.AddHostedService<ReservationExpirationWorker>();
 
 // 5. Controladores y Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Background Services
-builder.Services.AddHostedService<WebApplication.BackgroundServices.ReservationCleanupWorker>();
 
 var app = builder.Build();
 

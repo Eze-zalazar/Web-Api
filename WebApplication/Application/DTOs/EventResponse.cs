@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +13,7 @@ namespace Application.DTOs
         public string Venue { get; set; }
         public DateTime EventDate { get; set; }
         public string Status { get; set; }
+        public string? ImageUrl { get; set; }
         /// Sectores del evento con nombre y precio.
         /// Permite al frontend mostrar información contextual sin depender de las butacas.
         public IEnumerable<SectorInfo> Sectors { get; set; } = Enumerable.Empty<SectorInfo>();

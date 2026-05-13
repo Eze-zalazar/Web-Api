@@ -4,103 +4,99 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WebApplication.BackgroundServices
+namespace WebApi.BackgroundServices
 {
     public class ReservationCleanupWorker : BackgroundService
     {
         private readonly ILogger<ReservationCleanupWorker> _logger;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public ReservationCleanupWorker(ILogger<ReservationCleanupWorker> logger, IServiceProvider serviceProvider)
+        public ReservationCleanupWorker(ILogger<ReservationCleanupWorker> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Reservation Cleanup Worker is starting.");
+            _logger.LogInformation("Reservation Cleanup Worker iniciado.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Reservation Cleanup Worker running at: {time}", DateTimeOffset.Now);
-
                 try
                 {
-                    await CleanupExpiredReservationsAsync();
+                    await CleanupExpiredReservationsAsync(stoppingToken);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred executing Reservation Cleanup.");
+                    _logger.LogError(ex, "Ocurrió un error inesperado al limpiar reservas expiradas.");
                 }
 
-                // Wait 1 minute before checking again
+                // Esperar 1 minuto antes de volver a chequear
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
 
-            _logger.LogInformation("Reservation Cleanup Worker is stopping.");
+            _logger.LogInformation("Reservation Cleanup Worker detenido.");
         }
 
-        private async Task CleanupExpiredReservationsAsync()
+        private async Task CleanupExpiredReservationsAsync(CancellationToken stoppingToken)
         {
-            using (var scope = _serviceProvider.CreateScope())
+            using var scope = _serviceScopeFactory.CreateScope();
+            
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var reservationRepo = scope.ServiceProvider.GetRequiredService<IReservationRepository>();
+            var auditLogRepo = scope.ServiceProvider.GetRequiredService<IAuditLogRepository>();
+
+            var currentTime = DateTime.UtcNow;
+            var expiredReservations = await reservationRepo.GetExpiredPendingReservationsAsync(currentTime);
+
+            foreach (var reservation in expiredReservations)
             {
-                var reservationRepository = scope.ServiceProvider.GetRequiredService<IReservationRepository>();
-                var seatRepository = scope.ServiceProvider.GetRequiredService<ISeatRepository>();
-                var auditLogRepository = scope.ServiceProvider.GetRequiredService<IAuditLogRepository>();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                if (stoppingToken.IsCancellationRequested) break;
 
-                // Need a way to get expired reservations. Since we don't have GetExpiredAsync in the interface yet, we will just fetch all pending ones and filter.
-                // Or we can add a method to IReservationRepository.
-                // For now, let's assume IReservationRepository needs a method. 
-                // Wait, I will add a GetExpiredReservationsAsync method.
-                var expiredReservations = await reservationRepository.GetExpiredReservationsAsync(DateTime.UtcNow);
+                await unitOfWork.BeginTransactionAsync();
 
-                foreach (var reservation in expiredReservations)
+                try
                 {
-                    await unitOfWork.BeginTransactionAsync();
-                    try
+                    // 1. Cancelar Reserva
+                    reservation.Status = "Expired";
+                    await reservationRepo.UpdateAsync(reservation);
+
+                    // 2. Liberar Butaca
+                    if (reservation.Seat != null)
                     {
-                        // Update reservation status
-                        reservation.Status = "Cancelled";
-                        await reservationRepository.UpdateAsync(reservation);
-
-                        // Update seat status back to Available
-                        var seat = await seatRepository.GetByIdAsync(reservation.SeatId);
-                        if (seat != null)
-                        {
-                            seat.Status = "Available";
-                            seat.Version++;
-                            await seatRepository.UpdateAsync(seat);
-                        }
-
-                        // Log audit
-                        var auditLog = new Audit_Log
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = reservation.UserId,
-                            Action = "RESERVATION_EXPIRED",
-                            EntityType = "Seat",
-                            EntityId = reservation.SeatId.ToString(),
-                            Details = $"Reserva {reservation.Id} expiró. Butaca {reservation.SeatId} liberada.",
-                            CreatedAt = DateTime.UtcNow
-                        };
-                        await auditLogRepository.AddAsync(auditLog);
-
-                        await unitOfWork.SaveChangesAsync();
-                        await unitOfWork.CommitTransactionAsync();
-
-                        _logger.LogInformation("Reserva {ReservationId} cancelada por expiración.", reservation.Id);
+                        reservation.Seat.Status = "Available";
+                        reservation.Seat.Version++;
                     }
-                    catch (Exception ex)
+
+                    // 3. Auditoría
+                    var auditLog = new Audit_Log
                     {
-                        await unitOfWork.RollbackTransactionAsync();
-                        _logger.LogError(ex, "Error al cancelar la reserva expirada {ReservationId}", reservation.Id);
-                    }
+                        Id = Guid.NewGuid(),
+                        UserId = reservation.UserId,
+                        Action = "Reservation Expired",
+                        EntityType = "Reservation",
+                        EntityId = reservation.Id.ToString(),
+                        Details = $"Reserva expirada automáticamente. Butaca liberada (ID: {reservation.Seat?.Id}).",
+                        CreatedAt = DateTime.UtcNow,
+                        MilisegundoExacto = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    };
+
+                    await auditLogRepo.AddAsync(auditLog);
+
+                    // 4. Guardar y Confirmar
+                    await unitOfWork.SaveChangesAsync();
+                    await unitOfWork.CommitTransactionAsync();
+
+                    _logger.LogInformation($"Reserva expirada procesada: {reservation.Id}");
+                }
+                catch (Exception ex)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    _logger.LogError(ex, $"Error al intentar liberar la reserva expirada: {reservation.Id}");
                 }
             }
         }

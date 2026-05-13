@@ -32,20 +32,12 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        
-        /// Solo trae el evento, sin sectores.
-        /// Usado internamente para verificar existencia (ej: GetAllSeatsBySectorHandler).
-       
         public async Task<Event?> GetByIdAsync(int id)
         {
             return await _context.Events
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        
-        /// Trae el evento con sus sectores cargados.
-        /// Usado en el endpoint GET /api/v1/events/{id} para devolver info contextual completa.
-        
         public async Task<Event?> GetByIdWithSectorsAsync(int id)
         {
             return await _context.Events
@@ -53,10 +45,9 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task AddAsync(Event eventEntity)
+        public async Task AddAsync(Event evento)
         {
-            await _context.Events.AddAsync(eventEntity);
-            await _context.SaveChangesAsync();
+            await _context.Events.AddAsync(evento);
         }
 
         public async Task AddAsync(Event evento)

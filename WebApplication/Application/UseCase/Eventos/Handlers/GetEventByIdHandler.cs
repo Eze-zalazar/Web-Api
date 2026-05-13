@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.UseCase.Eventos.Commands;
 using System;
@@ -31,6 +31,7 @@ namespace Application.UseCase.Eventos.Handlers
                 Venue = evento.Venue,
                 EventDate = evento.EventDate,
                 Status = evento.Status,
+                ImageUrl = evento.ImageUrl,
                 Sectors = evento.Sectors?.Select(s => new SectorInfo
                 {
                     Id = s.Id,
