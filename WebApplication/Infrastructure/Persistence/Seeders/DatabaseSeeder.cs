@@ -29,13 +29,14 @@ namespace Infrastructure.Persistence.Seeders
                 var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
                 var userRole = context.Roles.FirstOrDefault(r => r.Name == "User");
 
+                if (adminRole == null || userRole == null) return;
+
                 var adminUser = new User
                 {
                     Name = "Administrador",
                     Email = "admin@admin.com",
                     PasswordHash = "admin123",
-                    RoleId = adminRole.Id,
-                    Rol = "Admin"
+                    RoleId = adminRole.Id
                 };
 
                 var clientUser = new User
@@ -43,8 +44,7 @@ namespace Infrastructure.Persistence.Seeders
                     Name = "Usuario Cliente",
                     Email = "cliente@cliente.com",
                     PasswordHash = "cliente123",
-                    RoleId = userRole.Id,
-                    Rol = "Usuario"
+                    RoleId = userRole.Id
                 };
 
                 context.Users.Add(adminUser);
@@ -63,7 +63,7 @@ namespace Infrastructure.Persistence.Seeders
                     EventDate = new DateTime(2026, 7, 15, 21, 0, 0),
                     Venue = "Estadio Obras Sanitarias",
                     Status = "Active",
-                    ImageUrl = "",
+                    ImageUrl = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800",
                     Sectors = new List<Sector>()
                 };
 
@@ -114,6 +114,16 @@ namespace Infrastructure.Persistence.Seeders
 
                 await context.Events.AddAsync(evento);
                 await context.SaveChangesAsync();
+            }
+            else
+            {
+                // Actualización forzada para el evento semilla existente
+                var babasonicos = context.Events.FirstOrDefault(e => e.Name.Contains("Babasonicos"));
+                if (babasonicos != null)
+                {
+                    babasonicos.ImageUrl = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800";
+                    await context.SaveChangesAsync();
+                }
             }
         }
     }

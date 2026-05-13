@@ -1,6 +1,7 @@
 using Application.UseCase.Eventos.Commands;
 using Application.UseCase.Eventos.Handlers;
 using Application.UseCase.Eventos.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -63,6 +64,7 @@ namespace WebApi.Controllers
         }
 
         // POST api/v1/events
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEventCommand command)
         {

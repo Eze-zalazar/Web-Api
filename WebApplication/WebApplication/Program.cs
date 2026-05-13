@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
 using WebApi.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 
@@ -26,11 +27,40 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // 2. Configuración de CORS 
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(origin => true) // Permite cualquier origen dinámicamente
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // Obligatorio para cookies
     });
 });
+
+// 2.5 Configuración de Autenticación por Cookies
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "TicketApp.Auth";
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.LoginPath = "/api/v1/auth/login";
+        options.AccessDeniedPath = "/api/v1/auth/access-denied";
+        options.SlidingExpiration = true;
+        
+        // Ajuste para desarrollo local (CORS + Cookies)
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+        // Evitar redirecciones 302 en API y devolver 401/403
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+    });
 
 // 3. Inyección de Dependencias (UnitOfWork y Repositorios)
 builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
@@ -97,6 +127,7 @@ app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 // 3. TERCERO: El resto de la seguridad
+app.UseAuthentication(); // <-- AGREGAR ESTO
 app.UseAuthorization();
 
 app.MapControllers();
