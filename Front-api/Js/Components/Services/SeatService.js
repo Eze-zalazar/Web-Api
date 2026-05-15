@@ -2,7 +2,7 @@ const BASE_URL = 'http://localhost:5280/api/v1/events'; // Cambiado a 7253 y htt
 
 export const getSeatsByEvent = async (eventId) => {
     try {
-        const response = await fetch(`${BASE_URL}/${eventId}/seats`);
+        const response = await fetch(`${BASE_URL}/${eventId}/seats`, { credentials: 'include' });
         if (!response.ok) throw new Error('Error al obtener asientos');
         return await response.json();
     } catch (error) {

@@ -2,7 +2,7 @@ const BASE_URL = 'http://localhost:5280/api/v1/events'; // Cambiado a 7253 y htt
 
 export const getAllEvents = async (page = 1, pageSize = 10) => {
     try {
-        const response = await fetch(`${BASE_URL}?page=${page}&pageSize=${pageSize}`);
+        const response = await fetch(`${BASE_URL}?page=${page}&pageSize=${pageSize}`, { credentials: 'include' });
         if (!response.ok) throw new Error('Error al obtener eventos');
         return await response.json();
     } catch (error) {
@@ -13,7 +13,7 @@ export const getAllEvents = async (page = 1, pageSize = 10) => {
 
 export const getEventById = async (id) => {
     try {
-        const response = await fetch(`${BASE_URL}/${id}`);
+        const response = await fetch(`${BASE_URL}/${id}`, { credentials: 'include' });
         if (!response.ok) throw new Error('Evento no encontrado');
         return await response.json();
     } catch (error) {
