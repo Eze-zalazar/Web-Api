@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Application.UseCase.Eventos.Queries;
 using System;
@@ -29,7 +29,8 @@ namespace Application.UseCase.Eventos.Handlers
                 Name = e.Name,
                 Venue = e.Venue,
                 EventDate = e.EventDate,
-                Status = e.Status
+                Status = e.Status,
+                ImageUrl = e.ImageUrl
             });
         }
     }

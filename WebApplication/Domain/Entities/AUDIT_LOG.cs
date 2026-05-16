@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,11 +16,8 @@ namespace Domain.Entities
         public string Details { get; set; }
         public DateTime CreatedAt { get; set; }
 
-
         public User User { get; set; } 
-
-
-
+        public long MilisegundoExacto { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     }
 }

@@ -1,6 +1,10 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Persistence.Seeders
 {
@@ -8,116 +12,119 @@ namespace Infrastructure.Persistence.Seeders
     {
         public static async Task SeedAsync(AppDbContext context, IConfiguration configuration)
         {
-            if (context.Events.Any()) return;
-
-            int seatsPerSector = configuration.GetValue<int>("SeederSettings:SeatsPerSector");
-
-            var eventos = new List<Event>
+            // 1. Seed Roles (siempre primero)
+            if (!context.Roles.Any())
             {
-                new Event
+                context.Roles.AddRange(new List<Role>
                 {
-                    Name = "Concierto de Babasonicos",
-                    EventDate = DateTime.UtcNow.AddMonths(2),
-                    Venue = "Estadio Central",
-                    Status = "Active"
-                },
-                new Event
-                {
-                    Name = "Concierto de Los Piojos",
-                    EventDate = DateTime.UtcNow.AddMonths(3),
-                    Venue = "Estadio Monumental",
-                    Status = "Active"
-                },
-                new Event
-                {
-                    Name = "Concierto de Jonas Brothers",
-                    EventDate = DateTime.UtcNow.AddMonths(4),
-                    Venue = "Movistar Arena",
-                    Status = "Active"
-                },
-                
-                new Event
-                {
-                    Name = "Concierto de Anuel AA",
-                    EventDate = DateTime.UtcNow.AddMonths(5),
-                    Venue = "Luna Park",
-                    Status = "Active"
-                },
-                new Event
-                {
-                    Name = "Concierto de Miranda!",
-                    EventDate = DateTime.UtcNow.AddMonths(6),
-                    Venue = "Teatro Gran Rex",
-                    Status = "Active"
-                },
-                new Event
-                {
-                    Name = "Concierto de Duki",
-                    EventDate = DateTime.UtcNow.AddMonths(7),
-                    Venue = "Movistar Arena",
-                    Status = "Active"
-                }
-            };
-
-            context.Events.AddRange(eventos);
-            await context.SaveChangesAsync();
-
-            var sectores = new List<Sector>();
-
-            foreach (var evento in eventos)
-            {
-                sectores.AddRange(new List<Sector>
-                {
-                    new Sector
-                    {
-                        EventId = evento.Id,
-                        Name = "Campo",
-                        Price = 15000,
-                        Capacity = seatsPerSector
-                    },
-                    new Sector
-                    {
-                        EventId = evento.Id,
-                        Name = "Platea",
-                        Price = 25000,
-                        Capacity = seatsPerSector
-                    }
+                    new Role { Name = "Admin" },
+                    new Role { Name = "User" }
                 });
+                await context.SaveChangesAsync();
             }
 
-            context.Sectors.AddRange(sectores);
-            await context.SaveChangesAsync();
-
-            var butacas = new List<Seat>();
-
-            foreach (var sector in sectores)
+            // 2. Seed Usuarios
+            if (!context.Users.Any())
             {
-                for (int numeroButaca = 1; numeroButaca <= sector.Capacity; numeroButaca++)
+                var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
+                var userRole = context.Roles.FirstOrDefault(r => r.Name == "User");
+
+                if (adminRole == null || userRole == null) return;
+
+                var adminUser = new User
                 {
-                    butacas.Add(new Seat
+                    Name = "Administrador",
+                    Email = "admin@admin.com",
+                    PasswordHash = "admin123",
+                    RoleId = adminRole.Id
+                };
+
+                var clientUser = new User
+                {
+                    Name = "Usuario Cliente",
+                    Email = "cliente@cliente.com",
+                    PasswordHash = "cliente123",
+                    RoleId = userRole.Id
+                };
+
+                context.Users.Add(adminUser);
+                context.Users.Add(clientUser);
+                await context.SaveChangesAsync();
+            }
+
+            // 3. Seed Evento con Sectores y Butacas (obligatorio para la entrega)
+            if (!context.Events.Any())
+            {
+                int seatsPerSector = 50; // Mínimo requerido por los criterios de entrega
+
+                var evento = new Event
+                {
+                    Name = "Rock en el Estadio - Babasonicos",
+                    EventDate = new DateTime(2026, 7, 15, 21, 0, 0),
+                    Venue = "Estadio Obras Sanitarias",
+                    Status = "Active",
+                    ImageUrl = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800",
+                    Sectors = new List<Sector>()
+                };
+
+                // Sector 1: Campo ($15.000)
+                var sectorCampo = new Sector
+                {
+                    Name = "Campo",
+                    Price = 15000,
+                    Capacity = seatsPerSector,
+                    Seats = new List<Seat>()
+                };
+
+                for (int i = 1; i <= seatsPerSector; i++)
+                {
+                    sectorCampo.Seats.Add(new Seat
                     {
                         Id = Guid.NewGuid(),
-                        SectorId = sector.Id,
                         RowIdentifier = "A",
-                        SeatNumber = numeroButaca,
+                        SeatNumber = i,
                         Status = "Available",
                         Version = 1
                     });
                 }
+
+                // Sector 2: Platea ($25.000)
+                var sectorPlatea = new Sector
+                {
+                    Name = "Platea",
+                    Price = 25000,
+                    Capacity = seatsPerSector,
+                    Seats = new List<Seat>()
+                };
+
+                for (int i = 1; i <= seatsPerSector; i++)
+                {
+                    sectorPlatea.Seats.Add(new Seat
+                    {
+                        Id = Guid.NewGuid(),
+                        RowIdentifier = "B",
+                        SeatNumber = i,
+                        Status = "Available",
+                        Version = 1
+                    });
+                }
+
+                evento.Sectors.Add(sectorCampo);
+                evento.Sectors.Add(sectorPlatea);
+
+                await context.Events.AddAsync(evento);
+                await context.SaveChangesAsync();
             }
-
-            context.Seats.AddRange(butacas);
-
-            var usuario = new User
+            else
             {
-                Name = "Usuario Test",
-                Email = "test@test.com",
-                PasswordHash = "hash_simulado"
-            };
-
-            context.Users.Add(usuario);
-
-            await context.SaveChangesAsync();
+                // Actualización forzada para el evento semilla existente
+                var babasonicos = context.Events.FirstOrDefault(e => e.Name.Contains("Babasonicos"));
+                if (babasonicos != null)
+                {
+                    babasonicos.ImageUrl = "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800";
+                    await context.SaveChangesAsync();
+                }
+            }
         }
     }
 }

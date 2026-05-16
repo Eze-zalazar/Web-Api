@@ -1,10 +1,13 @@
 import { getAllEvents } from '../Components/Services/EventService.js';
 import { createEventCard } from '../Components/Carts/EventsCard.js';
 import { renderSeatSelection } from './SeatSelectionPage.js';
+import { renderCreateEventPage } from './CreateEventPage.js';
 import { filterEvents } from '../Components/Search/filterEvents.js';
+import { isAdmin } from '../Components/Services/AuthService.js';
 
 export const renderEventsPage = async () => {
     const app = document.getElementById('app');
+    const userIsAdmin = isAdmin();
     
     app.innerHTML = `
         <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 animate-in fade-in duration-500">
@@ -13,13 +16,23 @@ export const renderEventsPage = async () => {
                 <p class="text-gray-500">Encontrá tu lugar. Viví el momento.</p>
             </div>
             
-            <div class="relative w-full md:w-80">
-                <input type="text" id="event-search" 
-                    placeholder="Buscar conciertos o venues..." 
-                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm shadow-sm">
-                <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+            <div class="flex items-center gap-3">
+                ${userIsAdmin ? `
+                <button id="create-event-btn" class="bg-blue-900 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Crear evento
+                </button>
+                ` : ''}
+                <div class="relative w-full md:w-80">
+                    <input type="text" id="event-search" 
+                        placeholder="Buscar conciertos o venues..." 
+                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm shadow-sm">
+                    <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
             </div>
         </div>
 
@@ -37,13 +50,18 @@ export const renderEventsPage = async () => {
         filterEvents(e.target.value, grid);
     });
 
+    // Botón de crear evento (solo admin)
+    if (userIsAdmin) {
+        document.getElementById('create-event-btn').onclick = () => renderCreateEventPage();
+    }
+
     try {
         const events = await getAllEvents();
         
         grid.innerHTML = '';
 
         if (events.length === 0) {
-            grid.innerHTML = `<p class="col-span-full text-center py-20 text-gray-400">No hay eventos disponibles.</p>`;
+            grid.innerHTML = `<p class="col-span-full text-center py-20 text-gray-400">No hay eventos disponibles.${userIsAdmin ? ' ¡Creá el primero!' : ''}</p>`;
             return;
         }
 
@@ -63,4 +81,4 @@ export const renderEventsPage = async () => {
             </div>
         `;
     }
-};  
+};
