@@ -5,7 +5,8 @@ export const createReservation = async (seatId, userId) => {
         const response = await fetch(BASE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ seatId, userId })
+            body: JSON.stringify({ seatId, userId }),
+            credentials: 'include'
         });
 
         const data = await response.json();
@@ -25,7 +26,7 @@ export const createReservation = async (seatId, userId) => {
 };
 
 export const getUserReservations = async (userId) => {
-    const response = await fetch(`${BASE_URL}/user/${userId}`);
+    const response = await fetch(`${BASE_URL}/user/${userId}`, { credentials: 'include' });
     if (!response.ok) {
         throw new Error("Error al obtener las reservas.");
     }

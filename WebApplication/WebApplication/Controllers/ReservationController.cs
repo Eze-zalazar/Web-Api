@@ -1,10 +1,12 @@
 using Application.UseCase.Reservations.Commands;
 using Application.UseCase.Reservations.Handlers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/v1/reservations")]
     public class ReservationController : ControllerBase

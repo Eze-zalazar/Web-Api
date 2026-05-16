@@ -4,7 +4,8 @@ export const createEvent = async (eventData) => {
     const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventData)
+        body: JSON.stringify(eventData),
+        credentials: 'include'
     });
 
     const data = await response.json();

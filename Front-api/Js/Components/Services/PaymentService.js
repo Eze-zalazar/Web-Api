@@ -5,7 +5,8 @@ export const processPayment = async (reservationId, userId) => {
         const response = await fetch(BASE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reservationId, userId })
+            body: JSON.stringify({ reservationId, userId }),
+            credentials: 'include'
         });
 
         const data = await response.json();

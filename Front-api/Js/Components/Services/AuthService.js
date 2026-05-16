@@ -4,7 +4,8 @@ export const login = async (email, password) => {
     const response = await fetch(`${BASE_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
     });
 
     const data = await response.json();
@@ -23,8 +24,13 @@ export const getCurrentUser = () => {
     return user ? JSON.parse(user) : null;
 };
 
-export const logout = () => {
+export const logout = async () => {
     localStorage.removeItem('stagely_user');
+    try {
+        await fetch(`${BASE_URL}/logout`, { method: 'POST', credentials: 'include' });
+    } catch (error) {
+        console.error("Error al cerrar sesión", error);
+    }
 };
 
 export const isAdmin = () => {

@@ -1,11 +1,12 @@
 # Web-Api
 
-🎟️ **Sistema de Venta de Entradas - Entrega 1**
-Sistema robusto de gestión y venta de entradas para eventos masivos, desarrollado con arquitectura limpia y preparado para manejar alta concurrencia.
+🎟️ **Sistema de Venta de Entradas - Entrega Final (Fases 1 y 2)**
+Sistema robusto de gestión y venta de entradas para eventos masivos, desarrollado con Clean Architecture y rigurosamente preparado para manejar alta concurrencia, transacciones atómicas y liberación automática de recursos.
 
 ---
 
 ## 📋 Tabla de Contenidos
+- [Características Principales](#-características-principales)
 - [Tecnologías Utilizadas](#-tecnologías-utilizadas)
 - [Requisitos Previos](#-requisitos-previos)
 - [Configuración del Proyecto](#-configuración-del-proyecto)
@@ -13,10 +14,19 @@ Sistema robusto de gestión y venta de entradas para eventos masivos, desarrolla
 - [Endpoints de la API](#-endpoints-de-la-api)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Datos de Prueba](#-datos-de-prueba)
-- [Pruebas Rápidas](#-pruebas-rápidas)
 - [Solución de Problemas Comunes](#-solución-de-problemas-comunes)
-- [Notas Importantes](#-notas-importantes)
 - [Equipo de Desarrollo](#-equipo-de-desarrollo)
+
+---
+
+## ✨ Características Principales
+
+*   **Arquitectura de Datos (Code-First):** Modelo de dominio normalizado con generación automática de esquemas mediante migraciones de Entity Framework Core.
+*   **Alta Concurrencia (Optimistic Locking):** Protección contra *race conditions* usando un token de concurrencia (`Version`). Si dos usuarios intentan reservar la misma butaca al mismo milisegundo, solo uno tiene éxito y el otro recibe un amigable error HTTP 409 Conflict.
+*   **Transaccionalidad (ACID):** El procesamiento de pagos y confirmación de reservas está agrupado en un `UnitOfWork`. Si alguna parte falla, se ejecuta un *Rollback* automático y seguro.
+*   **Auto-Mantenimiento (Background Jobs):** Un servicio en segundo plano (`ReservationExpirationWorker`) escanea constantemente reservas que lleven más de 5 minutos sin ser pagadas, liberando las butacas automáticamente para nuevos compradores.
+*   **Auditoría y Trazabilidad:** Todo intento de reserva (exitoso o fallido por concurrencia), procesamiento de pago y liberación de sistema queda registrado inmutablemente en un `AuditLog`, registrando acción, usuario y milisegundo exacto.
+*   **UX Reactiva y Temporizadores:** El Frontend implementa una cuenta regresiva (05:00 a 00:00) para pagar las reservas, notificaciones emergentes (Toasts) amigables, y comunicación asíncrona total sin recarga de página.
 
 ---
 
@@ -27,12 +37,13 @@ Sistema robusto de gestión y venta de entradas para eventos masivos, desarrolla
 - **ORM:** Entity Framework Core
 - **Base de Datos:** SQL Server
 - **Arquitectura:** Clean Architecture (Domain, Application, Infrastructure, WebApi)
-- **Documentación:** Swagger/OpenAPI
+- **Seguridad:** Autenticación por Cookies (`CookieAuthenticationDefaults`) y autorización por Roles.
+- **Documentación:** Swagger / OpenAPI
 
 ### Frontend
-- **Lenguaje:** JavaScript (ES6+)
-- **Estilos:** Tailwind CSS
-- **Arquitectura:** Componentes modulares (Pages, Services, Components)
+- **Lenguaje:** JavaScript (Vanilla ES6+), HTML5, CSS3
+- **Arquitectura:** Componentes modulares, servicios asíncronos (`Fetch API` con `credentials: 'include'`).
+- **Feedback Visual:** Spinners, Toasts para errores y éxitos, Temporizadores de expiración.
 
 ---
 
@@ -65,9 +76,6 @@ cd <NOMBRE_DEL_PROYECTO>
 {
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost,1433;Database=TicketingDB;User Id=sa;Password=TU_PASSWORD_AQUI;TrustServerCertificate=True;"
-  },
-  "SeederSettings": {
-    "SeatsPerSector": 50
   }
 }
 ```
@@ -77,36 +85,16 @@ cd <NOMBRE_DEL_PROYECTO>
 ```bash
 cd WebApplication
 ```
-2. Edita `appsettings.json` con tu editor preferido y actualiza la contraseña.
-
-#### Verificar SQL Server
-Asegúrate de que SQL Server esté corriendo:
-
-**Windows:**
-1. Presiona `Win + R`
-2. Escribe `services.msc`
-3. Busca "SQL Server (MSSQLSERVER)" o "SQL Server (SQLEXPRESS)"
-4. Verifica que el estado sea "En ejecución"
-
-Alternativamente, ejecuta en CMD/PowerShell:
-```bash
-sqlcmd -S localhost -U sa -P TU_PASSWORD
-```
+2. Edita `appsettings.json` con tu editor preferido y actualiza la contraseña de tu instancia SQL Server.
 
 ### 3. Aplicar Migraciones y Seed de Datos
-Las migraciones se aplican automáticamente al iniciar la aplicación gracias al método `MigrateAsync()` en `Program.cs`.
+Las migraciones y la inyección de datos semilla (seeding) **se aplican automáticamente** al iniciar la aplicación gracias a `MigrateAsync()` y `DatabaseSeeder.SeedAsync()` en `Program.cs`.
 
 Si prefieres aplicarlas manualmente:
 ```bash
 cd WebApplication
 dotnet ef database update
 ```
-
-**Datos de Seed:** El sistema carga automáticamente:
-- ✅ 6 eventos activos (Babasonicos, Los Piojos, Jonas Brothers, Anuel AA, Miranda!, Duki)
-- ✅ 2 sectores por evento (Campo: $15.000, Platea: $25.000)
-- ✅ 50 butacas numeradas por sector
-- ✅ 1 usuario de prueba
 
 ---
 
@@ -116,7 +104,7 @@ dotnet ef database update
 
 #### Opción 1: Desde Visual Studio
 1. Abre la solución `WebApplication.sln`
-2. Selecciona el perfil de ejecución `http` o `https` en el dropdown (al lado del botón Run)
+2. Selecciona el perfil de ejecución `http` o `https`
 3. Presiona `F5` o click en el botón ▶️
 4. La API se levantará en:
    - HTTP: `http://localhost:5280`
@@ -128,261 +116,66 @@ dotnet ef database update
 cd WebApplication/WebApplication
 dotnet run --launch-profile http
 ```
-Verás un mensaje similar a:
-```
-Now listening on: http://localhost:5280
-Application started. Press Ctrl+C to shut down.
-```
 
 ### Frontend
 
+Dado que la aplicación maneja sesiones seguras por Cookies (`credentials: 'include'`), es **estrictamente necesario** abrir el Frontend a través de un servidor HTTP local. No abras `index.html` directamente desde tu sistema de archivos.
+
 #### Opción 1: Usando Live Server (Recomendado)
-1. Instala la extensión "Live Server" en VS Code
-2. Abre la carpeta `Front-api` en VS Code
-3. Click derecho en `index.html` → Open with Live Server
-4. Se abrirá en `http://127.0.0.1:5500`
+1. Instala la extensión "Live Server" en VS Code.
+2. Abre la carpeta `Front-api` en VS Code.
+3. Click derecho en `index.html` → Open with Live Server.
 
 #### Opción 2: Usando npx serve
 ```bash
 cd Front-api
 npx serve .
 ```
-Se abrirá en `http://localhost:3000`
-
-#### Opción 3: Python Simple HTTP Server
-```bash
-cd Front-api
-python -m http.server 8000
-```
-Se abrirá en `http://localhost:8000`
-
-> ⚠️ **Importante:** No abras `index.html` directamente desde el explorador de archivos (`file://`). Los módulos ES6 requieren un servidor HTTP para funcionar correctamente.
 
 ---
 
-## 📡 Endpoints de la API
+## 📡 Endpoints de la API (Resumen)
 
-### Eventos
+### Autenticación (`/api/v1/auth`)
+- **POST `/login`**: Inicia sesión y devuelve una Cookie persistente (requerida para reservar y pagar).
+- **POST `/logout`**: Destruye la sesión actual.
 
-**GET `/api/v1/events`**
-Listado paginado de eventos activos.
+### Eventos y Butacas (`/api/v1/events`)
+- **GET `/`**: Listado paginado de eventos.
+- **GET `/{id}/seats`**: Obtener el estado actual (Available, Reserved, Sold) de todas las butacas de un evento.
+- **POST `/`**: (Solo Admins) Crea un nuevo evento.
 
-- Query Parameters:
-  - `page` (int, requerido): Número de página (comienza en 1)
-  - `pageSize` (int, requerido): Cantidad de eventos por página
-
-Ejemplo: `GET http://localhost:5280/api/v1/events?page=1&pageSize=10`
-Respuesta `200 OK`:
-```json
-[
-  {
-    "id": 1,
-    "name": "Concierto de Babasonicos",
-    "venue": "Estadio Central",
-    "eventDate": "2026-06-22T19:19:44.481Z",
-    "status": "Active"
-  }
-]
-```
-
-**GET `/api/v1/events/{id}`**
-Obtener un evento específico por ID.
-
-### Butacas
-
-**GET `/api/v1/events/{id}/seats`**
-Obtener todas las butacas de un evento con su estado actual.
-
-Ejemplo: `GET http://localhost:5280/api/v1/events/1/seats`
-Respuesta `200 OK`:
-```json
-[
-  {
-    "id": "13b52825-4fe6-4e53-aa06-00e65a3e3dc0",
-    "rowIdentifier": "A",
-    "seatNumber": 20,
-    "status": "Reserved",
-    "sectorId": 2
-  }
-]
-```
-Estados posibles:
-- `Available`: Butaca disponible
-- `Reserved`: Butaca reservada temporalmente
-- `Sold`: Butaca vendida
-
-### Reservas
-
-**POST `/api/v1/reservations`**
-Crear una nueva reserva.
-
-Body:
-```json
-{
-  "seatId": "13b52825-4fe6-4e53-aa06-00e65a3e3dc0"
-}
-```
-Respuesta `201 Created`:
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "userId": 1,
-  "seatId": "13b52825-4fe6-4e53-aa06-00e65a3e3dc0",
-  "status": "Pending",
-  "reservedAt": "2026-04-28T10:30:00Z"
-}
-```
-- `409 Conflict`: La butaca ya fue reservada por otro usuario o no está disponible.
-- `404 Not Found`: La butaca no existe.
-
-### Auditoría
-
-**GET `/api/v1/audit-logs`**
-Listado paginado de logs de auditoría.
-
-- Query Parameters:
-  - `page` (int, requerido): Número de página (comienza en 1)
-  - `pageSize` (int, requerido): Cantidad de eventos por página
-
----
-
-## 📁 Estructura del Proyecto
-
-### Backend
-```
-WebApplication/
-├── Domain/                    # Entidades de dominio
-│   └── Entities/
-│       ├── Event.cs
-│       ├── Sector.cs
-│       ├── Seat.cs
-│       ├── User.cs
-│       ├── Reservation.cs
-│       └── Audit_Log.cs
-│   └── Exceptions/
-├── Application/               # Lógica de negocio
-│   ├── DTOs/
-│   ├── Interfaces/
-│   └── UseCase/
-│       ├── Eventos/
-│       ├── Seats/
-│       ├── Reservations/
-│       └── AuditLogs/
-├── Infrastructure/            # Acceso a datos
-│   ├── Persistence/
-│   │   ├── AppDbContext.cs
-│   │   ├── Repositories/
-│   │   └── Seeders/
-│   │       └── DatabaseSeeder.cs
-│   └── Migrations/
-└── WebApi/                    # Capa de presentación
-    ├── Controllers/
-    │   ├── EventController.cs
-    │   ├── SeatsController.cs
-    │   ├── ReservationController.cs
-    │   └── AuditLogsController.cs
-    ├── Program.cs
-    └── appsettings.json
-```
-
-### Frontend
-```
-Front-api/
-├── index.html
-├── Js/
-│   ├── Controllers/
-│   │   └── UserPageMain.js
-│   ├── Pages/
-│   │   ├── EventsPage.js
-│   │   └── SeatSelectionPage.js
-│   ├── Components/
-│   │   ├── Carts/
-│   │   │   ├── EventsCard.js
-│   │   │   └── SectorCard.js
-│   │   ├── Services/
-│   │   │   ├── EventService.js
-│   │   │   ├── SeatService.js
-│   │   │   └── ReservationService.js
-│   │   ├── Search/
-│   │   │   └── filterEvents.js
-│   │   └── Toast/
-│   │       └── toast.js
-│   └── Styles/
-│       └── StyleSections/
-│           └── Paleta.css
-```
+### Reservas y Pagos (`/api/v1/reservations` | `/api/v1/payments`)
+- **POST `/reservations`**: Bloqueo temporal (5 mins). Si la butaca está siendo tomada por otro usuario, retorna `409 Conflict`.
+- **POST `/payments`**: Procesa la transacción atómica. Pasa la reserva a "Completed" y la butaca a "Sold". Retorna error si han pasado los 5 minutos.
 
 ---
 
 ## 🧪 Datos de Prueba
 
-**Eventos Precargados:**
-| ID | Nombre | Venue | Fecha |
-|---|---|---|---|
-| 1 | Concierto de Babasonicos | Estadio Central | +2 meses |
-| 2 | Concierto de Los Piojos | Estadio Monumental | +3 meses |
-| 3 | Concierto de Jonas Brothers | Movistar Arena | +4 meses |
-| 4 | Concierto de Anuel AA | Luna Park | +5 meses |
-| 5 | Concierto de Miranda! | Teatro Gran Rex | +6 meses |
-| 6 | Concierto de Duki | Movistar Arena | +7 meses |
+Al iniciar por primera vez, el sistema autoconstruye el siguiente set de datos:
 
-**Sectores por Evento:**
-Cada evento tiene 2 sectores:
-- Campo: $15.000 (50 butacas)
-- Platea: $25.000 (50 butacas)
+**Usuarios:**
+- Administrador: `admin@admin.com` | Pass: `admin123`
+- Cliente: `cliente@cliente.com` | Pass: `cliente123`
 
-**Usuario de Prueba:**
-- ID: `1`
-- Nombre: `Usuario Test`
-- Email: `test@test.com`
-
----
-
-## 🧪 Pruebas Rápidas
-
-### Verificar que la API funciona
-Abre Swagger UI en `http://localhost:5280/swagger` y ejecuta:
-1. `GET /api/v1/events?page=1&pageSize=10` → Debería devolver los eventos.
-2. `GET /api/v1/events/1/seats` → Debería devolver 100 butacas (2 sectores × 50).
-3. `POST /api/v1/reservations` → Usa un `seatId` del paso 2.
-
-### Verificar que el Frontend funciona
-1. Abre `http://localhost:5500` (o el puerto que uses).
-2. Deberías ver las cards de eventos.
-3. Click en "Seleccionar butacas" de cualquier evento.
-4. Deberías ver el mapa con 100 butacas (verdes = disponibles, rojas = ocupadas).
-5. Click en una butaca verde → se pone azul y aparece en el panel derecho.
-6. Click en "Reservar butaca" → debería mostrar toast de éxito y la butaca quedar roja.
+**Evento Activo:**
+- **Rock en el Estadio - Babasonicos**
+- Sectores: **Campo** ($15.000) y **Platea** ($25.000).
+- Butacas: **50 butacas numeradas** disponibles para venta por cada sector.
 
 ---
 
 ## 🔧 Solución de Problemas Comunes
 
-**Error: "Cannot open database"**
-- **Causa:** SQL Server no está corriendo o la contraseña es incorrecta.
-- **Solución:** Verifica que SQL Server esté corriendo. Revisa que la contraseña en `appsettings.json` sea correcta.
+**1. No puedo loguearme o reservar (Error al Parsear JSON)**
+- **Solución:** Asegúrate de ejecutar el frontend desde un servidor HTTP local (ej. Live Server). Las políticas modernas de navegadores prohíben el envío de Cookies de sesión desde orígenes `file://`.
 
-**Error: "Failed to load resource: net::ERR_CONNECTION_REFUSED"**
-- **Causa:** La API no está corriendo o el frontend apunta al puerto incorrecto.
-- **Solución:** Verifica que la API esté corriendo en `http://localhost:5280`.
+**2. Error: "409 Conflict" al reservar**
+- **Solución:** ¡Esto es un feature! El sistema está protegiendo la butaca porque otro usuario la reservó una fracción de segundo antes que tú o ya no está disponible. Verás un toast en la UI notificándotelo.
 
-**Frontend queda en "Loading..."**
-- **Causa:** Archivos JS no cargan (problema CORS o servidor HTTP).
-- **Solución:** NO abras `index.html` directamente desde el explorador. Usa Live Server, `npx serve`, o Python HTTP Server.
-
-**Error: "409 Conflict" al reservar**
-- **Causa:** La butaca ya fue reservada o no está disponible.
-- **Solución:** Esto es el comportamiento esperado. Selecciona otra butaca disponible.
-
----
-
-## 📝 Notas Importantes
-- ✅ Las migraciones se aplican automáticamente al iniciar la API.
-- ✅ El seeder solo corre si la tabla Events está vacía.
-- ✅ Para resetear la BD: borrar `TicketingDB` en SSMS y reiniciar la API.
-- ✅ Los cambios en `appsettings.json` requieren reiniciar la API.
-- ⚠️ El frontend requiere que la API esté corriendo primero.
-- ⚠️ No usar el frontend con `file://` — siempre usar un servidor HTTP.
+**3. Las reservas desaparecen sin hacer nada**
+- **Solución:** Es el Worker de mantenimiento. Cualquier reserva no pagada en 5 minutos se autodestruye y la butaca vuelve a estar verde.
 
 ---
 

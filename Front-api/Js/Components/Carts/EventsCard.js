@@ -12,7 +12,7 @@ export const createEventCard = (event, onSelect) => {
     });
 
     const backgrounds = {
-        babasonicos: 'https://freight.cargo.site/i/e90f4f73ca28c9cfd211f9cfbc9dabb5fd2be4492d9c7884a47cc89fdf7c0980/Babasonicos-Prensa-1280.jpg',
+        babasonicos: 'https://media.infobae.com/adjuntos/203/imagenes/030/171/0030171052.jpg',
         piojos: 'https://cdn.rock.com.ar/wp-content/uploads/2023/01/los-piojos-6.webp',
         jonas: 'https://hips.hearstapps.com/hmg-prod/images/2-68f15344b6337.jpg',
         anuel: 'https://akamai.sscdn.co/tb/letras-blog/wp-content/uploads/2023/06/298041e-anuel-aa-1024x576.jpg',
